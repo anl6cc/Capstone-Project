@@ -1,0 +1,17 @@
+*.egg-info
+
+*.pyc
+
+*.gz
+
+*.ipynb
+
+*.coverage
+
+build
+
+dist
+
+debug_script.py
+
+test_output.txt
