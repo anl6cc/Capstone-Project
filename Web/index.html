@@ -6,6 +6,7 @@
   <script type="text/javascript" src="./scripts/vis/dist/vis.js"></script>
   <link href="./scripts/vis/dist/vis.css" rel="stylesheet" type="text/css" />
 
+
   <style type="text/css">
     #mynetwork {
       width: 600px;
@@ -22,50 +23,9 @@
 
 <div id="mynetwork"></div>
 
-<script type="text/javascript">
-  // create an array with nodes
-  var nodes = new vis.DataSet([
-    {id: 1, label: 'Node 1', color: 'lime', x: 0, y: 0, allowedToMoveX: true},
-    {id: 2, label: 'Node 2', x: 100, y: 100},
-    {id: 3, label: 'Node 3', x: 200, y: 200},
-    {id: 4, label: 'Node 4', x: 300, y: 300},
-    {id: 5, label: 'Node 5', x: 400, y: 400}
-  ]);
+<div id="textfile"></div>
 
-  // create an array with edges
-  var edges = new vis.DataSet([
-    {from: 1, to: 2, length: 10},
-    {from: 2, to: 3, length: 10},
-    {from: 3, to: 4, length: 10},
-    {from: 4, to: 5, length: 10}
-  ]);
+<script type="text/javascript" src="./scripts/app.js"></script>
 
-  // create a network
-  var container = document.getElementById('mynetwork');
-  var data = {
-    nodes: nodes,
-    edges: edges
-  };
-  var options = {
-  	stabilize: true,
-  	nodes: {/*
-  		fixed: {
-  			x: true,
-  			y: true
-  		}*/
-  	},
-  	edges: {
-  		smooth: {
-  			enabled: false
-  		}, 
- 		width: 5,
- 		style: 'line'
-  	},
-  	height: '100%'
-  };
-  var network = new vis.Network(container, data, options);
-</script>
-
-<!--<script src="../googleAnalytics.js"></script>-->
 </body>
 </html>
