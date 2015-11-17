@@ -1,25 +1,79 @@
   // JSON and node work on Aluu's computer
   //console.log(JSON.stringify(vis));
-$(document).ready(function () {
+  console.log('hi');
+
+function readTextFile(file)
+  {
+    var rawFile = new XMLHttpRequest();
+    rawFile.open("GET", file, false);
+    rawFile.onreadystatechange = function ()
+    {
+        if(rawFile.readyState === 4)
+        {
+            if(rawFile.status === 200 || rawFile.status == 0)
+            {
+                //document.getElementById("textfile").innerHTML = rawFile.responseText;
+                //console.log(rawFile.responseText);
+                var dataString = rawFile.responseText;
+                initialize(dataString);
+            }
+        }
+    }
+    rawFile.send(null);
+  }
+
+function initialize(dataString)
+{
+
+  var lines = dataString.split("\n");
+  var num = parseInt(lines[0], 10);
+
+  //console.log(JSON.stringify(lines));
+
+  s1 = [];
+  
+  for(var i=1; i < num + 1; i++)
+  {
+    var pos = lines[i].split(" ");
+    console.log(pos[1]);
+    s1.push([parseFloat(pos[0]), parseFloat(pos[1])]);// parseFloat(pos[1]));
+  }
  
   $.jqplot.config.enablePlugins = true;
  
-  s1 = [['23-May-08',1],['24-May-08',4],['25-May-08',2],['26-May-08', 6]];
+  //s1 = [['23-May-08',1],['24-May-08',4],['25-May-08',2],['26-May-08', 6]];
+
+/*
+  var plot1 = $.jqplot('chart1', [s1], {  
+      series:[{showMarker:false}],
+      axes:{
+        xaxis:{
+          label:'Angle (radians)'
+        },
+        yaxis:{
+          label:'Cosine'
+        }
+      }
+  });*/
  
   plot1 = $.jqplot('chart1',[s1],{
      title: 'Highlighting, Dragging, Cursor and Trend Line',
      axes: {
+      /*
          xaxis: {
-             renderer: $.jqplot.DateAxisRenderer,
+             //renderer: $.jqplot.DateAxisRenderer,
+             
              tickOptions: {
-                 formatString: '%#m/%#d/%y'
+                 formatString: '%.2f'
              },
              numberTicks: 4
-         },
+         },*/
          yaxis: {
+          
              tickOptions: {
-                 formatString: '$%.2f'
+                 formatString: '%.2f'
              }
+             
          }
      },
      highlighter: {
@@ -31,8 +85,23 @@ $(document).ready(function () {
      },
      cursor: {
          show: true
-     }
+     },
+     series:[{
+        dragable: {
+        color: '#ff3366',
+        constrainTo: 'y'
+    },
+    trendline: {
+        color: '#cccccc'
+    }
+     }]
   });
+
+}
+
+$(document).ready(function () {
+  readTextFile("./patient_data/Patient_12508.Plan_14.dvh.1abCompositeDoseDelivered.esophagus.ddvh");
+  //console.log('sup');
 });
 
 /*
