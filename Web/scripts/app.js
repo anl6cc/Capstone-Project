@@ -1,5 +1,41 @@
   // JSON and node work on Aluu's computer
   //console.log(JSON.stringify(vis));
+$(document).ready(function () {
+ 
+  $.jqplot.config.enablePlugins = true;
+ 
+  s1 = [['23-May-08',1],['24-May-08',4],['25-May-08',2],['26-May-08', 6]];
+ 
+  plot1 = $.jqplot('chart1',[s1],{
+     title: 'Highlighting, Dragging, Cursor and Trend Line',
+     axes: {
+         xaxis: {
+             renderer: $.jqplot.DateAxisRenderer,
+             tickOptions: {
+                 formatString: '%#m/%#d/%y'
+             },
+             numberTicks: 4
+         },
+         yaxis: {
+             tickOptions: {
+                 formatString: '$%.2f'
+             }
+         }
+     },
+     highlighter: {
+         sizeAdjust: 10,
+         tooltipLocation: 'n',
+         tooltipAxes: 'y',
+         tooltipFormatString: '<b><i><span style="color:red;">hello</span></i></b> %.2f',
+         useAxesFormatters: false
+     },
+     cursor: {
+         show: true
+     }
+  });
+});
+
+/*
 
   function readTextFile(file)
   {
@@ -46,6 +82,8 @@
   var lines = dataString.split("\n");
   var num = parseInt(lines[0], 10);
 
+  */
+
   //console.log(JSON.stringify(lines));
   /*
   for(var i=1; i < num + 1; i++)
@@ -58,11 +96,13 @@
     }
   }
 */
-  console.log(JSON.stringify(nodeArray));
+  //console.log(JSON.stringify(nodeArray));
   
   //var nodes = new vis.DataSet(nodeArray);
   
   // create an array with edges
+
+  /*
   
   var edges = new vis.DataSet([
     {from: 1, to: 2, length: 10},
@@ -72,6 +112,7 @@
   /*
   var edges = new vis.DataSet(edgeArray);
   */
+  /*
   // create a network
   var container = document.getElementById('mynetwork');
   var data = {
@@ -98,3 +139,5 @@
   };
   var network = new vis.Network(container, data, options);
   }
+
+  */
