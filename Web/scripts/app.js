@@ -1,7 +1,7 @@
-  // JSON and node work on Aluu's computer
-  //console.log(JSON.stringify(vis));
-  console.log('hi');
+// JSON and node work on Aluu's computer
+//console.log(JSON.stringify(vis));
 
+// read in the DDVH file
 function readTextFile(file)
   {
     var rawFile = new XMLHttpRequest();
@@ -12,52 +12,47 @@ function readTextFile(file)
         {
             if(rawFile.status === 200 || rawFile.status == 0)
             {
-                //document.getElementById("textfile").innerHTML = rawFile.responseText;
-                //console.log(rawFile.responseText);
+                // if everything is good then obtain the string and initialize the array for plotting
                 var dataString = rawFile.responseText;
-                initialize(dataString);
+                return initialize(dataString);
             }
         }
+        return [];
     }
     rawFile.send(null);
+
+    // return what is returned when the file reading is complete
+    return rawFile.onreadystatechange.call();
   }
 
+// read the data from the text file string to obtain an array to pass to jqplot
 function initialize(dataString)
 {
-
   var lines = dataString.split("\n");
-  var num = parseInt(lines[0], 10);
-
-  //console.log(JSON.stringify(lines));
+  var num = parseInt(lines[0], 10); // obtain the number of data points
 
   s1 = [];
   
+  // build the array for jqplot
   for(var i=1; i < num + 1; i++)
   {
     var pos = lines[i].split(" ");
     console.log(pos[1]);
-    s1.push([parseFloat(pos[0]), parseFloat(pos[1])]);// parseFloat(pos[1]));
+    s1.push([parseFloat(pos[0]), parseFloat(pos[1])]);
   }
- 
-  $.jqplot.config.enablePlugins = true;
- 
-  //s1 = [['23-May-08',1],['24-May-08',4],['25-May-08',2],['26-May-08', 6]];
 
-/*
-  var plot1 = $.jqplot('chart1', [s1], {  
-      series:[{showMarker:false}],
-      axes:{
-        xaxis:{
-          label:'Angle (radians)'
-        },
-        yaxis:{
-          label:'Cosine'
-        }
-      }
-  });*/
- 
-  plot1 = $.jqplot('chart1',[s1],{
-     title: 'Highlighting, Dragging, Cursor and Trend Line',
+  // return the array
+  return s1;
+}
+
+// after reading all files generate the plot given the data points and options to move only in the y direction
+function plot(all, seriesOptions)
+{
+    $.jqplot.config.enablePlugins = true;
+
+    // generate the jqplot
+    var plot1 = $.jqplot('chart1',all,{
+     title: 'Patient Esophagus and Heart Data (Patient 12508 Trial 14)',
      axes: {
       /*
          xaxis: {
@@ -80,133 +75,40 @@ function initialize(dataString)
          sizeAdjust: 10,
          tooltipLocation: 'n',
          tooltipAxes: 'y',
-         tooltipFormatString: '<b><i><span style="color:red;">hello</span></i></b> %.2f',
+         tooltipFormatString: '<b><i><span style="color:red;">Dose</span></i></b> %.2f',
          useAxesFormatters: false
      },
      cursor: {
          show: true
      },
-     series:[{
-        dragable: {
-        color: '#ff3366',
-        constrainTo: 'y'
-    },
-    trendline: {
-        color: '#cccccc'
-    }
-     }]
+     series: seriesOptions // need a series to constrain to y for every line
   });
-
 }
 
+// called at the beginning
 $(document).ready(function () {
-  readTextFile("./patient_data/Patient_12508.Plan_14.dvh.1abCompositeDoseDelivered.esophagus.ddvh");
-  //console.log('sup');
+  // read in the patient files
+  var esophagus = readTextFile("./patient_data/Patient_12508.Plan_14.dvh.1abCompositeDoseDelivered.esophagus.ddvh");
+  var heart = readTextFile("./patient_data/Patient_12508.Plan_14.dvh.1abCompositeDoseDelivered.heart.ddvh");
+
+  // argument to be passed to plot the data
+  var arg = [esophagus, heart];
+
+  // generate an array to pass in series options for all data sets
+  var series = [];
+  for(var i=0; i<arg.length; i++)
+  {
+    series.push({
+      dragable: {
+          color: '#ff3366',
+          constrainTo: 'y'
+      },
+      trendline: {
+          color: '#cccccc'
+      }
+    });
+  }
+
+  // plot the data
+  plot(arg, series);
 });
-
-/*
-
-  function readTextFile(file)
-  {
-    var rawFile = new XMLHttpRequest();
-    rawFile.open("GET", file, false);
-    rawFile.onreadystatechange = function ()
-    {
-        if(rawFile.readyState === 4)
-        {
-            if(rawFile.status === 200 || rawFile.status == 0)
-            {
-                //document.getElementById("textfile").innerHTML = rawFile.responseText;
-                //console.log(rawFile.responseText);
-                var dataString = rawFile.responseText;
-                initialize(dataString);
-            }
-        }
-    }
-    rawFile.send(null);
-  }
-
-  readTextFile("./patient_data/Patient_12508.Plan_14.dvh.1abCompositeDoseDelivered.esophagus.ddvh");
-  //readTextFile("./patient_data/Patient_12508.Plan_14.dvh.1abCompositeDoseDelivered.heart.ddvh");
-
-  //readTextFile("./patient_data/test.txt");
-
-  // initialize the graph
-  function initialize(dataString)
-  {
-      // create an array with nodes
-  
-  var nodes = new vis.DataSet([
-    {id: 1, color: 'lime', x: 0, y: 0, allowedToMoveX: true},
-    {id: 2, label: 'Node 2', x: 100.5, y: 100},
-    {id: 3, label: 'Node 3', x: 200, y: 200},
-    {id: 4, label: 'Node 4', x: 300, y: 300},
-    {id: 5, label: 'Node 5', x: 400, y: 400}
-  ]);
-  
-
-  var nodeArray = [];
-  var edgeArray = [];
-
-  var lines = dataString.split("\n");
-  var num = parseInt(lines[0], 10);
-
-  */
-
-  //console.log(JSON.stringify(lines));
-  /*
-  for(var i=1; i < num + 1; i++)
-  {
-    var pos = lines[i].split(" ");
-    nodeArray.push({id: i, x: parseFloat(pos[0]), y: parseFloat(pos[1]) * 1000});
-    if(i !== 1)
-    {
-      edgeArray.push({from: i - 1, to: i, length: 10});
-    }
-  }
-*/
-  //console.log(JSON.stringify(nodeArray));
-  
-  //var nodes = new vis.DataSet(nodeArray);
-  
-  // create an array with edges
-
-  /*
-  
-  var edges = new vis.DataSet([
-    {from: 1, to: 2, length: 10},
-    {from: 2, to: 3, length: 10},
-    {from: 4, to: 5, length: 10}
-  ]);
-  /*
-  var edges = new vis.DataSet(edgeArray);
-  */
-  /*
-  // create a network
-  var container = document.getElementById('mynetwork');
-  var data = {
-    nodes: nodes,
-    edges: edges
-  };
-  var options = {
-    nodes: {
-        fixed: {
-            //x: true,
-            //y: true
-            x: true,
-            y: true
-            //y: true
-        }
-    },
-    edges: {
-        smooth: {
-            enabled: false
-        }, 
-        width: 5
-    },
-    height: '100%'
-  };
-  var network = new vis.Network(container, data, options);
-  }
-
-  */
