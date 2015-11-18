@@ -3,31 +3,56 @@
 
 <html>
 <head>
-	
 	<title>Patient Esophagus and Heart Data (Patient 12508 Trial 14)</title>
-    <script class="include" type="text/javascript" src="./scripts/jqplot/dist/jquery.min.js"></script>
-    
-   
-</head>
-<body>
-
-    <div class="example-plot" id="chart1"></div>  
+  <script class="include" type="text/javascript" src="./scripts/jqplot/dist/jquery.min.js"></script>
+  <meta charset="UTF-8">
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="css/bs_leftnavi.css">
+  <script src="js/bs_leftnavi.js"></script>
 
   <script class="code" type="text/javascript" src="./scripts/app.js"></script>
 
-<script type="text/javascript" src="./scripts/jqplot/dist/jquery.min.js"></script>
-<script type="text/javascript" src="./scripts/jqplot/dist/jquery.jqplot.min.js"></script>
-<script type="text/javascript" src="./scripts/jqplot/dist/plugins/jqplot.dateAxisRenderer.min.js"></script>
-<script type="text/javascript" src="./scripts/jqplot/dist/plugins/jqplot.barRenderer.min.js"></script>
-<script type="text/javascript" src="./scripts/jqplot/dist/plugins/jqplot.categoryAxisRenderer.min.js"></script>
-<script type="text/javascript" src="./scripts/jqplot/dist/plugins/jqplot.cursor.min.js"></script>
-<script type="text/javascript" src="./scripts/jqplot/dist/plugins/jqplot.highlighter.min.js"></script>
-<script type="text/javascript" src="./scripts/jqplot/dist/plugins/jqplot.dragable.min.js"></script>
-<script type="text/javascript" src="./scripts/jqplot/dist/plugins/jqplot.trendline.min.js"></script>
-<link rel="stylesheet" type="text/css" hrf="./scripts/jqplot/dist/jquery.jqplot.min.css" />
-
-
-	</div>	
+  <script type="text/javascript" src="./scripts/jqplot/dist/jquery.min.js"></script>
+  <script type="text/javascript" src="./scripts/jqplot/dist/jquery.jqplot.min.js"></script>
+  <script type="text/javascript" src="./scripts/jqplot/dist/plugins/jqplot.dateAxisRenderer.min.js"></script>
+  <script type="text/javascript" src="./scripts/jqplot/dist/plugins/jqplot.barRenderer.min.js"></script>
+  <script type="text/javascript" src="./scripts/jqplot/dist/plugins/jqplot.categoryAxisRenderer.min.js"></script>
+  <script type="text/javascript" src="./scripts/jqplot/dist/plugins/jqplot.cursor.min.js"></script>
+  <script type="text/javascript" src="./scripts/jqplot/dist/plugins/jqplot.highlighter.min.js"></script>
+  <script type="text/javascript" src="./scripts/jqplot/dist/plugins/jqplot.dragable.min.js"></script>
+  <script type="text/javascript" src="./scripts/jqplot/dist/plugins/jqplot.trendline.min.js"></script>
+  <link rel="stylesheet" type="text/css" hrf="./scripts/jqplot/dist/jquery.jqplot.min.css"/>
+</head>
+<body>
+<div class="gw-sidebar">
+  <div id="gw-sidebar" class="gw-sidebar">
+    <div class="nano-content">
+      <ul class="gw-nav gw-nav-list">
+        <li class="init-un-active"><a href="javascript:void(0)"> <span class="gw-menu-text">Navigation Menu</span> </a> </li>
+        <li class="init-arrow-down"><a href="javascript:void(0)"> <span class="gw-menu-text">Patient 1</span> <b class="gw-arrow"></b> </a>
+          <ul class="gw-submenu">
+            <li class = "active"> <a href="javascript:void(0)">Graph 1</a> </li>
+          </ul>
+        </li>
+        <li class="init-arrow-down"><a href="javascript:void(0)"> <span class="gw-menu-text">Patient 2</span> <b class="gw-arrow icon-arrow-up8"></b> </a>
+          <ul class="gw-submenu">
+            <li> <a href="javascript:void(0)">Graph 1</a> </li>
+            <li> <a href="javascript:void(0)">Graph 2</a> </li>
+            <li> <a href="javascript:void(0)">Graph 3</a> </li>
+          </ul>
+        </li>
+        <li class="init-arrow-down"><a href="javascript:void(0)"> <span class="gw-menu-text">Patient 3</span> <b></b> </a>
+          <ul class="gw-submenu">
+            <li> <a href="javascript:void(0)">Graph 1</a> </li>
+            <li> <a href="javascript:void(0)">Graph 2</a> </li>
+            <li> <a href="javascript:void(0)">Graph 3</a> </li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+<div class="example-plot" id="chart1" style = "margin-left:350px"></div>  
 
 </body>
 
