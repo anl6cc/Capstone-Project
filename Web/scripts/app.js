@@ -1,6 +1,9 @@
 // JSON and node work on Aluu's computer
 //console.log(JSON.stringify(vis));
-
+/*
+var blah = [1, 2, 3];
+console.log(blah.slice(0,2).reduce(function(a, b) { return a + b; }, 0));
+*/
 // read in the DDVH file
 function readTextFile(file)
   {
@@ -41,7 +44,7 @@ function initialize(dataString)
     s1.push([parseFloat(pos[0]), parseFloat(pos[1])]);
   }
 
-  // return the array
+  // return the dose array and the volume array
   return s1;
 }
 
@@ -75,7 +78,7 @@ function plot(all, seriesOptions)
          sizeAdjust: 10,
          tooltipLocation: 'n',
          tooltipAxes: 'y',
-         tooltipFormatString: '<b><i><span style="color:red;">Dose</span></i></b> %.2f',
+         tooltipFormatString: '<b><i><span style="color:red;">cDVH</span></i></b> %.2f',
          useAxesFormatters: false
      },
      cursor: {
@@ -85,14 +88,42 @@ function plot(all, seriesOptions)
   });
 }
 
+// convert the data from dvh volume to cdvh volume
+// uses method from Watkin's python program
+function convert(data)
+{
+  var dose = [];
+  var volume = [];
+  var total_volume = 0;
+  for(var i=0; i<data.length; i++)
+  {
+    dose.push(data[i][0]);
+    volume.push(data[i][1]);
+    total_volume += data[i][1];
+  }
+
+  totalData = [];
+  for(var i=data.length-1; i>-1; i--)
+  {
+    var sum = volume.slice(0,i).reduce(function(a, b) { return a + b; }, 0);
+    totalData[i] = [dose[i], 1 - sum/total_volume];
+  }
+
+  return totalData;
+}
+
 // called at the beginning
 $(document).ready(function () {
   // read in the patient files
   var esophagus = readTextFile("./patient_data/Patient_12508.Plan_14.dvh.1abCompositeDoseDelivered.esophagus.ddvh");
   var heart = readTextFile("./patient_data/Patient_12508.Plan_14.dvh.1abCompositeDoseDelivered.heart.ddvh");
 
+  // convert to cumulative
+  var totalEsophagus = convert(esophagus);
+  var totalHeart = convert(heart);
+
   // argument to be passed to plot the data
-  var arg = [esophagus, heart];
+  var arg = [totalEsophagus, totalHeart];
 
   // generate an array to pass in series options for all data sets
   var series = [];
