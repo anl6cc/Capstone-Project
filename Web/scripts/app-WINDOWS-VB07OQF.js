@@ -1,48 +1,9 @@
 // JSON and node work on Aluu's computer
 //console.log(JSON.stringify(vis));
-
 /*
-NOTES from meeting here bc idk
-convert ddvh to cumulative with thing like his python function
-grab curve
-id what curve it is
-write up summary/bullet list of technology we're using and why we're using it
-For specific patient:
-  there's multiple plans
-  want all ddvh data from all the plans for each organ (Ex: heart)
-  when you drag you are shifting from one plan to another
-  compute min and max to where they can drag it to
-  shift all other organ graphs from to the appropriate plan that is dragged to
-  each graph wouldn't necessarily have the same min and max
-  pick an organ
-    display a min of the desired organ
-    say lung to start with
-    show corresponding other organs
-each plan has all organs from all other plans included
-when they select any point that is dragged to new plan then shift the entire line (and other lines)
-
-Grant: Aim 3 is where we try to develop
-12508 patient not de best one
-he has a rly nice one that he will send us soon
-just lung and heart for now
-
-Value Hierarchy
-Patient
-  Plan
-    PTV
-    Lung
-    Heart
-    Esop
-
-User should be able to reorder these and that will determine what they will see (top will be minimalized)
-
-NTCP analysis
-
-Dun need patient on the navigation bar
-
-Just have patient selection on a separate page
+var blah = [1, 2, 3];
+console.log(blah.slice(0,2).reduce(function(a, b) { return a + b; }, 0));
 */
-
 // read in the DDVH file
 function readTextFile(file)
   {
@@ -83,7 +44,7 @@ function initialize(dataString)
     s1.push([parseFloat(pos[0]), parseFloat(pos[1])]);
   }
 
-  // return the array
+  // return the dose array and the volume array
   return s1;
 }
 
@@ -117,7 +78,7 @@ function plot(all, seriesOptions)
          sizeAdjust: 10,
          tooltipLocation: 'n',
          tooltipAxes: 'y',
-         tooltipFormatString: '<b><i><span style="color:red;">Dose</span></i></b> %.2f',
+         tooltipFormatString: '<b><i><span style="color:red;">cDVH</span></i></b> %.2f',
          useAxesFormatters: false
      },
      cursor: {
@@ -127,14 +88,42 @@ function plot(all, seriesOptions)
   });
 }
 
+// convert the data from dvh volume to cdvh volume
+// uses method from Watkin's python program
+function convert(data)
+{
+  var dose = [];
+  var volume = [];
+  var total_volume = 0;
+  for(var i=0; i<data.length; i++)
+  {
+    dose.push(data[i][0]);
+    volume.push(data[i][1]);
+    total_volume += data[i][1];
+  }
+
+  totalData = [];
+  for(var i=data.length-1; i>-1; i--)
+  {
+    var sum = volume.slice(0,i).reduce(function(a, b) { return a + b; }, 0);
+    totalData[i] = [dose[i], 1 - sum/total_volume];
+  }
+
+  return totalData;
+}
+
 // called at the beginning
 $(document).ready(function () {
   // read in the patient files
   var esophagus = readTextFile("./patient_data/Patient_12508.Plan_14.dvh.1abCompositeDoseDelivered.esophagus.ddvh");
   var heart = readTextFile("./patient_data/Patient_12508.Plan_14.dvh.1abCompositeDoseDelivered.heart.ddvh");
 
+  // convert to cumulative
+  var totalEsophagus = convert(esophagus);
+  var totalHeart = convert(heart);
+
   // argument to be passed to plot the data
-  var arg = [esophagus, heart];
+  var arg = [totalEsophagus, totalHeart];
 
   // generate an array to pass in series options for all data sets
   var series = [];
