@@ -42,7 +42,7 @@ function initialize(dataString)
   for(var i=1; i < num + 1; i++)
   {
     var pos = lines[i].split(" ");
-    console.log(pos[1]);
+    // console.log(pos[1]);
     s1.push([parseFloat(pos[0]), parseFloat(pos[1])]);
   }
 
@@ -55,9 +55,11 @@ function plot(all, seriesOptions)
 {
     $.jqplot.config.enablePlugins = true;
 
+    //console.log(JSON.stringify(all));
+
     // generate the jqplot
     var plot1 = $.jqplot('chart1',all,{
-     title: 'Patient Esophagus and Heart Data (Patient 12508 Trial 14)',
+     title: 'Heart (blue) vs Lung (orange)',
      axes: {
       /*
          xaxis: {
@@ -88,6 +90,8 @@ function plot(all, seriesOptions)
      },
      series: seriesOptions // need a series to constrain to y for every line
   });
+
+    console.log(JSON.stringify(plot1.series[0].data));
 }
 
 // convert the data from dvh volume to cdvh volume
@@ -117,15 +121,16 @@ function convert(data)
 // called at the beginning
 $(document).ready(function () {
   // read in the patient files
-  var esophagus = readTextFile("./patient_data/Patient_12508.Plan_14.dvh.1abCompositeDoseDelivered.esophagus.ddvh");
-  var heart = readTextFile("./patient_data/Patient_12508.Plan_14.dvh.1abCompositeDoseDelivered.heart.ddvh");
+  var heart = readTextFile("./patient_data/LungDVHAD/heart/4-beam_Esop.heart.ddvh");
+  var lung = readTextFile("./patient_data/LungDVHAD/lung/4-beam_Esop.L_lung.ddvh");
 
   // convert to cumulative
-  var totalEsophagus = convert(esophagus);
   var totalHeart = convert(heart);
+  var totalLung = convert(lung);
 
   // argument to be passed to plot the data
-  var arg = [totalEsophagus, totalHeart];
+  var arg = [totalHeart, totalLung];
+  //var arg = totalHeart;
 
   // generate an array to pass in series options for all data sets
   var series = [];
@@ -135,13 +140,60 @@ $(document).ready(function () {
       dragable: {
           color: '#ff3366',
           constrainTo: 'y'
-      },
-      trendline: {
-          color: '#cccccc'
       }
     });
   }
 
   // plot the data
   plot(arg, series);
+
+  $('#chart1').bind('jqplotDragStop',
+    function (seriesIndex, pointIndex, pixelposition, data) {
+      console.log(seriesIndex);
+      console.log(pointIndex);
+      console.log(pixelposition);
+      console.log(data);
+
+      // read in the patient files
+      var heart = readTextFile("./patient_data/LungDVHAD/heart/9-beam_Esop.heart.ddvh");
+      var lung = readTextFile("./patient_data/LungDVHAD/lung/9-beam_Esop.L_lung.ddvh");
+
+      // convert to cumulative
+      var totalHeart = convert(heart);
+      var totalLung = convert(lung);
+
+      // argument to be passed to plot the data
+      var arg = [totalHeart, totalLung];
+      //var arg = totalHeart;
+
+      // generate an array to pass in series options for all data sets
+      var series = [];
+      for(var i=0; i<arg.length; i++)
+      {
+        series.push({
+          dragable: {
+              color: '#ff3366',
+              constrainTo: 'y'
+          },
+          trendline: {
+              color: '#cccccc'
+          }
+        });
+      }
+
+      // plot the data
+      plot(arg, series);
+
+
+
+  }); 
+
+  $.jqplot.postDrawSeriesHooks.push(updatedSeries);
+  
+    function updatedSeries(sctx, options) {
+      /*for(var i=0; i<plot1.series[0].data.length; i++)
+      {
+
+      }*/
+    }
 });
