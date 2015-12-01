@@ -60,56 +60,6 @@ z-index:3
 }
 }
 
-.gw-nav-list>li.arrow-down:after {
-  content: '';
-  width: 7px;
-  height: 7px;
-  position: absolute;
-  right: 10px;
-  top: 15px;
-  border-top: 1px solid #bababa;
-  border-left: 1px solid #bababa;
-  -webkit-transform: rotate(45deg);
-  -webkit-animation: arrow-slide .5s 0s ease both;
-}
-
-.gw-nav-list>li.init-arrow-down:after {
-  content: '';
-  width: 7px;
-  height: 7px;
-  position: absolute;
-  right: 10px;
-  top: 15px;
-  border-right: 1px solid #bababa;
-  border-bottom: 1px solid #bababa;
-  -webkit-transform: rotate(45deg);
-}
-
-.gw-nav-list>li.arrow-up:after {
-  content: '';
-  width: 7px;
-  height: 7px;
-  position: absolute;
-  right: 10px;
-  top: 15px;
-  border-right: 1px solid #bababa;
-  border-bottom: 1px solid #bababa;
-  -webkit-transform: rotate(45deg);
-  -webkit-animation: arrow-slide1 .5s 0s ease both;
-}
-
-.gw-nav-list>li.init-arrow-up:after {
-  content: '';
-  width: 7px;
-  height: 7px;
-  position: absolute;
-  right: 10px;
-  top: 15px;
-  border-top: 1px solid #bababa;
-  border-left: 1px solid #bababa;
-  -webkit-transform: rotate(45deg);
-}
-
 .gw-nav-list>li.active { background-color: #fff; }
 
 .gw-nav-list>li>a {
@@ -173,27 +123,6 @@ z-index:3
   border: 2px solid #38a8ff;
   border-width: 0 2px 0 0
 }
-
-.gw-nav-list li.gw-open>a:after { display: none }
-
-.gw-nav-list>li a>.gw-arrow {
-  display: inline-block;
-  width: 14px!important;
-  height: 14px;
-  line-height: 14px;
-  text-shadow: none;
-  font-size: 18px;
-  position: absolute;
-  right: 11px;
-  top: 11px;
-  padding: 0;
-  color: #38a8ff;
-  text-shadow: 1px 1px #ff0000;
-}
-
-.gw-nav-list>li a:hover>.gw-arrow,
-.gw-nav-list>li.active>a>.gw-arrow,
-.gw-nav-list>li.gw-open>a>.gw-arrow { color: #38a8ff }
 
 .gw-nav-list>li>a>[class*="icon-"]:first-child {
   display: inline-block;
@@ -301,5 +230,8 @@ z-index:3
   width: 1.25em;
   display: inline-block;
   text-align: center
+}
+#result {
+  font-family: 'Roboto Condensed', sans-serif;
 }
 /*=================left navibar end=========================================*/
