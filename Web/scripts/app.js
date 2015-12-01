@@ -6,6 +6,8 @@ var blah = [1, 2, 3];
 console.log(blah.slice(0,2).reduce(function(a, b) { return a + b; }, 0));
 */
 
+var plot1;
+
 // read in the DDVH file
 function readTextFile(file)
   {
@@ -58,7 +60,7 @@ function plot(all, seriesOptions)
     //console.log(JSON.stringify(all));
 
     // generate the jqplot
-    var plot1 = $.jqplot('chart1',all,{
+    plot1 = $.jqplot('chart1',all,{
      title: 'Heart (blue) vs Lung (orange)',
      axes: {
       /*
@@ -91,7 +93,7 @@ function plot(all, seriesOptions)
      series: seriesOptions // need a series to constrain to y for every line
   });
 
-    console.log(JSON.stringify(plot1.series[0].data));
+    //console.log(JSON.stringify(plot1.series[0].data));
 }
 
 // convert the data from dvh volume to cdvh volume
@@ -120,13 +122,22 @@ function convert(data)
 
 // called at the beginning
 $(document).ready(function () {
+  var heart = [];
+  var lung = [];
+
   // read in the patient files
-  var heart = readTextFile("./patient_data/LungDVHAD/heart/4-beam_Esop.heart.ddvh");
-  var lung = readTextFile("./patient_data/LungDVHAD/lung/4-beam_Esop.L_lung.ddvh");
+  heart.push(readTextFile("./patient_data/LungDVHAD/heart/4-beam_Esop.heart.ddvh"));
+  lung.push(readTextFile("./patient_data/LungDVHAD/lung/4-beam_Esop.L_lung.ddvh"));
+
+  heart.push(readTextFile("./patient_data/LungDVHAD/heart/9-beam_Esop.heart.ddvh"));
+  lung.push(readTextFile("./patient_data/LungDVHAD/lung/9-beam_Esop.L_lung.ddvh"));
+
+  heart.push(readTextFile("./patient_data/LungDVHAD/heart/38-beamNCP_Esop.heart.ddvh"));
+  lung.push(readTextFile("./patient_data/LungDVHAD/lung/38-beamNCP_Esop.L_lung.ddvh"));
 
   // convert to cumulative
-  var totalHeart = convert(heart);
-  var totalLung = convert(lung);
+  var totalHeart = convert(heart[0]);
+  var totalLung = convert(lung[0]);
 
   // argument to be passed to plot the data
   var arg = [totalHeart, totalLung];
@@ -149,18 +160,20 @@ $(document).ready(function () {
 
   $('#chart1').bind('jqplotDragStop',
     function (seriesIndex, pointIndex, pixelposition, data) {
-      console.log(seriesIndex);
-      console.log(pointIndex);
-      console.log(pixelposition);
-      console.log(data);
-
-      // read in the patient files
-      var heart = readTextFile("./patient_data/LungDVHAD/heart/9-beam_Esop.heart.ddvh");
-      var lung = readTextFile("./patient_data/LungDVHAD/lung/9-beam_Esop.L_lung.ddvh");
+      //console.log(seriesIndex);
+      //console.log(pointIndex);
+      console.log(pixelposition); // this is an object with the new coordinates
+      //console.log(data);
 
       // convert to cumulative
-      var totalHeart = convert(heart);
-      var totalLung = convert(lung);
+      var totalHeart = convert(heart[2]);
+      var totalLung = convert(lung[2]);
+
+      //var x = pixelposition.xaxis;
+
+      //console.log(JSON.stringify(totalHeart));
+      //console.log(heart[0][x]);
+      //console.log(x);
 
       // argument to be passed to plot the data
       var arg = [totalHeart, totalLung];
@@ -174,9 +187,6 @@ $(document).ready(function () {
           dragable: {
               color: '#ff3366',
               constrainTo: 'y'
-          },
-          trendline: {
-              color: '#cccccc'
           }
         });
       }
@@ -191,9 +201,10 @@ $(document).ready(function () {
   $.jqplot.postDrawSeriesHooks.push(updatedSeries);
   
     function updatedSeries(sctx, options) {
-      /*for(var i=0; i<plot1.series[0].data.length; i++)
+      /*console.log(JSON.stringify(sctx));
+      for(var i=0; i<plot1.series[0].data.length; i++)
       {
-
+          plot1.series[0].data[i][1] += 0.01;
       }*/
     }
 });
