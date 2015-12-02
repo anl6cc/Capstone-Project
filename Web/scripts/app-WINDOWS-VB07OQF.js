@@ -1,13 +1,9 @@
 // JSON and node work on Aluu's computer
 //console.log(JSON.stringify(vis));
-
 /*
 var blah = [1, 2, 3];
 console.log(blah.slice(0,2).reduce(function(a, b) { return a + b; }, 0));
 */
-
-var plot1;
-
 // read in the DDVH file
 function readTextFile(file)
   {
@@ -44,7 +40,7 @@ function initialize(dataString)
   for(var i=1; i < num + 1; i++)
   {
     var pos = lines[i].split(" ");
-    // console.log(pos[1]);
+    console.log(pos[1]);
     s1.push([parseFloat(pos[0]), parseFloat(pos[1])]);
   }
 
@@ -57,11 +53,9 @@ function plot(all, seriesOptions)
 {
     $.jqplot.config.enablePlugins = true;
 
-    //console.log(JSON.stringify(all));
-
     // generate the jqplot
-    plot1 = $.jqplot('chart1',all,{
-     title: 'Heart (blue) vs Lung (orange)',
+    var plot1 = $.jqplot('chart1',all,{
+     title: 'Patient Esophagus and Heart Data (Patient 12508 Trial 14)',
      axes: {
       /*
          xaxis: {
@@ -92,8 +86,6 @@ function plot(all, seriesOptions)
      },
      series: seriesOptions // need a series to constrain to y for every line
   });
-
-    //console.log(JSON.stringify(plot1.series[0].data));
 }
 
 // convert the data from dvh volume to cdvh volume
@@ -122,26 +114,16 @@ function convert(data)
 
 // called at the beginning
 $(document).ready(function () {
-  var heart = [];
-  var lung = [];
-
   // read in the patient files
-  heart.push(readTextFile("./patient_data/LungDVHAD/heart/4-beam_Esop.heart.ddvh"));
-  lung.push(readTextFile("./patient_data/LungDVHAD/lung/4-beam_Esop.L_lung.ddvh"));
-
-  heart.push(readTextFile("./patient_data/LungDVHAD/heart/9-beam_Esop.heart.ddvh"));
-  lung.push(readTextFile("./patient_data/LungDVHAD/lung/9-beam_Esop.L_lung.ddvh"));
-
-  heart.push(readTextFile("./patient_data/LungDVHAD/heart/38-beamNCP_Esop.heart.ddvh"));
-  lung.push(readTextFile("./patient_data/LungDVHAD/lung/38-beamNCP_Esop.L_lung.ddvh"));
+  var esophagus = readTextFile("./patient_data/Patient_12508.Plan_14.dvh.1abCompositeDoseDelivered.esophagus.ddvh");
+  var heart = readTextFile("./patient_data/Patient_12508.Plan_14.dvh.1abCompositeDoseDelivered.heart.ddvh");
 
   // convert to cumulative
-  var totalHeart = convert(heart[0]);
-  var totalLung = convert(lung[0]);
+  var totalEsophagus = convert(esophagus);
+  var totalHeart = convert(heart);
 
   // argument to be passed to plot the data
-  var arg = [totalHeart, totalLung];
-  //var arg = totalHeart;
+  var arg = [totalEsophagus, totalHeart];
 
   // generate an array to pass in series options for all data sets
   var series = [];
@@ -151,60 +133,13 @@ $(document).ready(function () {
       dragable: {
           color: '#ff3366',
           constrainTo: 'y'
+      },
+      trendline: {
+          color: '#cccccc'
       }
     });
   }
 
   // plot the data
   plot(arg, series);
-
-  $('#chart1').bind('jqplotDragStop',
-    function (seriesIndex, pointIndex, pixelposition, data) {
-      //console.log(seriesIndex);
-      //console.log(pointIndex);
-      console.log(pixelposition); // this is an object with the new coordinates
-      //console.log(data);
-
-      // convert to cumulative
-      var totalHeart = convert(heart[2]);
-      var totalLung = convert(lung[2]);
-
-      //var x = pixelposition.xaxis;
-
-      //console.log(JSON.stringify(totalHeart));
-      //console.log(heart[0][x]);
-      //console.log(x);
-
-      // argument to be passed to plot the data
-      var arg = [totalHeart, totalLung];
-      //var arg = totalHeart;
-
-      // generate an array to pass in series options for all data sets
-      var series = [];
-      for(var i=0; i<arg.length; i++)
-      {
-        series.push({
-          dragable: {
-              color: '#ff3366',
-              constrainTo: 'y'
-          }
-        });
-      }
-
-      // plot the data
-      plot(arg, series);
-
-
-
-  }); 
-
-  $.jqplot.postDrawSeriesHooks.push(updatedSeries);
-  
-    function updatedSeries(sctx, options) {
-      /*console.log(JSON.stringify(sctx));
-      for(var i=0; i<plot1.series[0].data.length; i++)
-      {
-          plot1.series[0].data[i][1] += 0.01;
-      }*/
-    }
 });
