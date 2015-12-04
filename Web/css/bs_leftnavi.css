@@ -231,10 +231,13 @@ z-index:3
   display: inline-block;
   text-align: center
 }
+<<<<<<< HEAD
 #result {
   font-family: 'Roboto Condensed', sans-serif;
 }
 #chart1{
   font-family: 'Roboto Condensed', sans-serif;
 }
+=======
+>>>>>>> ca2b39ff209fbe7fd78a0e93c9775a38473eff4f
 /*=================left navibar end=========================================*/

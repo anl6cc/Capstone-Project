@@ -13,8 +13,17 @@
 
   <script class="include" type="text/javascript" src="./scripts/jqplot/dist/jquery.min.js"></script>
   <meta charset="UTF-8">
+
   <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>-->
   <link rel="stylesheet" type="text/css" href="css/bs_leftnavi.css">
+
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+  <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.1/themes/base/jquery-ui.css"/>
+  <link rel="stylesheet" type="text/css" href="css/bs_leftnavi.css">
+  <link rel="stylesheet" type="text/css" href="css/style.css">
+  <script src="js/bs_leftnavi.js"></script>
 
   
   <script src="js/bs_leftnavi.js"></script>
@@ -43,7 +52,18 @@
   <script type="text/javascript" src="./scripts/jqplot/dist/plugins/jqplot.cursor.min.js"></script>
   <script type="text/javascript" src="./scripts/jqplot/dist/plugins/jqplot.highlighter.min.js"></script>
   <script type="text/javascript" src="./scripts/jqplot/dist/plugins/jqplot.dragable.min.js"></script>
+
 -->
+
+
+  <link rel="stylesheet" type="text/css" hrf="./scripts/jqplot/dist/jquery.jqplot.min.css"/>
+
+  <script>
+  $(function(){
+    $('#box1').draggable();
+  });
+    
+  </script>
 
 </head>
 <body>
@@ -59,6 +79,7 @@
     </div>
   <!-- </div> -->
 </div>
+
 
 <div class="example-plot" id="chart1" style = "margin-left:350px"></div>  
 <div id = "result" style = "margin-left: 350px">
@@ -81,6 +102,12 @@
   <script type="text/javascript" src="./scripts/jqplot/dist/plugins/jqplot.cursor.min.js"></script>
   <script type="text/javascript" src="./scripts/jqplot/dist/plugins/jqplot.highlighter.min.js"></script>
   <script type="text/javascript" src="./scripts/jqplot/dist/plugins/jqplot.dragable.min.js"></script>
+
+<div class="example-plot" id="chart1"></div>  
+<div id = "result"></div>
+<div id = "box1">HERE</div>
+<div id = "box2">HERE?</div>
+
 
 </body>
 
