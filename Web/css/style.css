@@ -22,3 +22,9 @@
 	height: 50px;
 	width: 50px;
 }
+#container{
+	margin-left: 500px;
+	height: 500px; 
+	width: 500px; 
+	border: 1px solid black;
+}
