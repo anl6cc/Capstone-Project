@@ -190,6 +190,7 @@ div.jqplot-table-legend-swatch {
     left: 0px;
     padding-bottom: 0.5em;
     font-size: 1.2em;
+    font-family: Helvetica, sans-serif;
 }
 
 table.jqplot-cursor-tooltip {
