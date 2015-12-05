@@ -5,7 +5,6 @@
 var blah = [1, 2, 3];
 console.log(blah.slice(0,2).reduce(function(a, b) { return a + b; }, 0));
 */
-
 var plot1;
 
 // read in the DDVH file
@@ -58,28 +57,37 @@ function plot(all, seriesOptions)
     $.jqplot.config.enablePlugins = true;
 
     //console.log(JSON.stringify(all));
-
+    
     // generate the jqplot
-    plot1 = $.jqplot('chart1',all,{
+    plot1 = $.jqplot('chart1', all,{
      title: 'Heart (blue) vs Lung (orange)',
-     axes: {
-      /*
-         xaxis: {
-             //renderer: $.jqplot.DateAxisRenderer,
-             
-             tickOptions: {
-                 formatString: '%.2f'
-             },
-             numberTicks: 4
-         },*/
-         yaxis: {
-          
-             tickOptions: {
-                 formatString: '%.2f'
-             }
-             
-         }
-     },
+     axesDefaults: {
+        tickRenderer: $.jqplot.CanvasAxisTickRenderer ,
+        tickOptions: {
+          angle: 30
+        }
+      },
+      axes:{
+        xaxis:{
+          label:'Bottom',
+          labelRenderer: $.jqplot.CanvasAxisLabelRenderer,
+          labelOptions: {
+            fontFamily: 'Helvetica',
+            fontSize: '14pt'
+          },
+        },
+        yaxis:{
+          label:'Top',
+          labelRenderer: $.jqplot.CanvasAxisLabelRenderer,
+          labelOptions: {
+            fontFamily: 'Helvetica',
+            fontSize: '14pt'
+          },
+          tickOptions: {
+            formatString: '%.2f'
+          }
+        }
+      },
      highlighter: {
          sizeAdjust: 10,
          tooltipLocation: 'n',
@@ -90,6 +98,15 @@ function plot(all, seriesOptions)
      cursor: {
          show: true
      },
+    legend: {
+      renderer: $.jqplot.EnhancedLegendRenderer,
+      show: true,
+      rendererOptions: {
+          numberColumns: 3,
+      },
+      seriesToggle: true
+    }
+}
      series: seriesOptions // need a series to constrain to y for every line
   });
 
@@ -155,8 +172,39 @@ $(document).ready(function () {
     });
   }
 
-  // plot the data
+  // plot the data for the line chart
   plot(arg, series);
+
+  /////////////
+  //BAR CHART//
+  /////////////
+  var s1 = [2];
+  var s2 = [7];
+  var ticks = ['Cumulative'];
+  plot2 = $.jqplot('chart2', [s1, s2], {
+      seriesDefaults: {
+          renderer:$.jqplot.BarRenderer,
+          pointLabels: { show: true }
+      },
+      axes: {
+          xaxis: {
+              renderer: $.jqplot.CategoryAxisRenderer,
+              ticks: ticks
+          }
+      }
+  });
+
+  $('#chart2').bind('jqplotDataHighlight', 
+      function (ev, seriesIndex, pointIndex, data) {
+          $('#info2').html('series: '+seriesIndex+', point: '+pointIndex+', data: '+data);
+      }
+  );
+       
+  $('#chart2').bind('jqplotDataUnhighlight', 
+      function (ev) {
+          $('#info2').html('Nothing');
+      }
+  );
 
   $('#chart1').bind('jqplotDragStop',
     function (seriesIndex, pointIndex, pixelposition, data) {

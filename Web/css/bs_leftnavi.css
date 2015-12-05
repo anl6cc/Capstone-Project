@@ -5,7 +5,7 @@
 .gw-container.gw-main-container .gw-sidebar.gw-sidebar-fixed:before { left: auto }
 
 .gw-sidebar {
-  width: 320px;
+  width: 200px;
   position: fixed;
   border: 1px solid #e5e5e5;
   border-width: 0 1px 0 0;
