@@ -6,6 +6,8 @@ var blah = [1, 2, 3];
 console.log(blah.slice(0,2).reduce(function(a, b) { return a + b; }, 0));
 */
 var plot1;
+var xClick;
+var yClick;
 
 // read in the DDVH file
 function readTextFile(file)
@@ -61,34 +63,51 @@ function plot(all, seriesOptions)
     // generate the jqplot
     plot1 = $.jqplot('chart1', all,{
      title: 'Heart (blue) vs Lung (orange)',
-     axesDefaults: {
-        tickRenderer: $.jqplot.CanvasAxisTickRenderer ,
-        tickOptions: {
-          angle: 30
-        }
-      },
-      axes:{
+     // axesDefaults: {
+     //    tickRenderer: $.jqplot.CanvasAxisTickRenderer ,
+     //    tickOptions: {
+     //      angle: 30
+     //    }
+     //  },
+     //  axes:{
+     //    xaxis:{
+     //      label:'Bottom',
+     //      labelRenderer: $.jqplot.CanvasAxisLabelRenderer,
+     //      labelOptions: {
+     //        fontFamily: 'Helvetica',
+     //        fontSize: '14pt'
+     //      },
+     //    },
+     //    yaxis:{
+     //      label:'Top',
+     //      labelRenderer: $.jqplot.CanvasAxisLabelRenderer,
+     //      labelOptions: {
+     //        fontFamily: 'Helvetica',
+     //        fontSize: '14pt'
+     //      },
+     //      tickOptions: {
+     //        formatString: '%.2f'
+     //      }
+     //    }
+     //  },
+     axes: {
         xaxis:{
-          label:'Bottom',
-          labelRenderer: $.jqplot.CanvasAxisLabelRenderer,
-          labelOptions: {
-            fontFamily: 'Helvetica',
-            fontSize: '14pt'
-          },
+          label:'Dose (divide by 100 to get dose / Gy)',
+          min: 0,
+          tickOptions: {
+              mark: 'inside'
+          }
         },
         yaxis:{
-          label:'Top',
+          label:'Relative Volume',
           labelRenderer: $.jqplot.CanvasAxisLabelRenderer,
-          labelOptions: {
-            fontFamily: 'Helvetica',
-            fontSize: '14pt'
-          },
+          pad: 1.0,
           tickOptions: {
-            formatString: '%.2f'
+              mark: 'inside'
           }
         }
-      },
-     highlighter: {
+     },
+    highlighter: {
          sizeAdjust: 10,
          tooltipLocation: 'n',
          tooltipAxes: 'y',
@@ -143,18 +162,18 @@ $(document).ready(function () {
   var lung = [];
 
   // read in the patient files
-  heart.push(readTextFile("./patient_data/LungDVHAD/heart/4-beam_Esop.heart.ddvh"));
+  heart.push(readTextFile("./patient_data/LungDVHAD/heart/4-beam_Esop.heart.ddvh")); // bottom
   lung.push(readTextFile("./patient_data/LungDVHAD/lung/4-beam_Esop.L_lung.ddvh"));
 
-  heart.push(readTextFile("./patient_data/LungDVHAD/heart/9-beam_Esop.heart.ddvh"));
+  heart.push(readTextFile("./patient_data/LungDVHAD/heart/9-beam_Esop.heart.ddvh")); // top
   lung.push(readTextFile("./patient_data/LungDVHAD/lung/9-beam_Esop.L_lung.ddvh"));
 
-  heart.push(readTextFile("./patient_data/LungDVHAD/heart/38-beamNCP_Esop.heart.ddvh"));
+  heart.push(readTextFile("./patient_data/LungDVHAD/heart/38-beamNCP_Esop.heart.ddvh")); // middle
   lung.push(readTextFile("./patient_data/LungDVHAD/lung/38-beamNCP_Esop.L_lung.ddvh"));
 
   // convert to cumulative
-  var totalHeart = convert(heart[0]);
-  var totalLung = convert(lung[0]);
+  var totalHeart = convert(heart[2]);
+  var totalLung = convert(lung[2]);
 
   // argument to be passed to plot the data
   var arg = [totalHeart, totalLung];
@@ -168,13 +187,18 @@ $(document).ready(function () {
       dragable: {
           color: '#ff3366',
           constrainTo: 'y'
-      }
+      },
+      markerOptions: {
+        show: false,
+        size: 2
+     }
     });
   }
 
   // plot the data for the line chart
   plot(arg, series);
 
+<<<<<<< HEAD
   /////////////
   //BAR CHART//
   /////////////
@@ -205,17 +229,41 @@ $(document).ready(function () {
           $('#info2').html('Nothing');
       }
   );
+=======
+  returnPRP(totalHeart[0], totalHeart[1]);
+
+  $('#chart1').bind('jqplotDragStart',
+    function (seriesIndex, pointIndex, pixelposition, data) {
+      console.log("loooooooooooooool");
+      console.log(data);
+      xClick = data.x;
+      yClick = data.y;
+    });
+>>>>>>> 2c7cea7b1d57cdbc4bed36c2ecc57c487ab155f9
 
   $('#chart1').bind('jqplotDragStop',
     function (seriesIndex, pointIndex, pixelposition, data) {
       //console.log(seriesIndex);
-      //console.log(pointIndex);
-      console.log(pixelposition); // this is an object with the new coordinates
+      console.log(pointIndex);
+      //console.log(pixelposition); // this is an object with the new coordinates
       //console.log(data);
 
       // convert to cumulative
-      var totalHeart = convert(heart[2]);
-      var totalLung = convert(lung[2]);
+      var totalHeart;
+      var totalLung;
+
+      // if you moved up go to the top plan
+      if(pointIndex.y > yClick)
+      {
+          totalHeart = convert(heart[0]);
+          totalLung = convert(lung[0]);
+      }
+      // if you moved down go to the bottom plan
+      else
+      {
+          totalHeart = convert(heart[1]);
+          totalLung = convert(lung[1]);
+      }
 
       //var x = pixelposition.xaxis;
 
@@ -235,14 +283,22 @@ $(document).ready(function () {
           dragable: {
               color: '#ff3366',
               constrainTo: 'y'
-          }
+          },
+          markerOptions: {
+            show: false,
+            size: 2
+         }
         });
       }
 
       // plot the data
       plot(arg, series);
 
+      returnPRP(totalHeart[0], totalHeart[1]);
 
+      // replot the data
+      // so the graphs don't stack
+      plot1.replot();
 
   }); 
 
@@ -254,5 +310,29 @@ $(document).ready(function () {
       {
           plot1.series[0].data[i][1] += 0.01;
       }*/
+    }
+
+    function returnPRP(dose, volume)
+    {
+      var con = -2.98;
+      var c_d = 0.0356;
+      var c_v = 4.13;
+      var c_v2 = -5.18;
+      var c_d2 = -0.000727;
+      var c_dv = 0.221;
+      var PRPSum = 0;
+      var PRP = [];
+      for(var i=volume.length-1; i>-1; i--)
+      {
+          var expFactor = con + c_d * dose[i] + c_v * volume[i] + c_d2 * Math.pow(dose[i], 2) + c_v2 * Math.pow(volume[i], 2) + c_dv * dose[i]*volume[i];
+          PRP[i] = 1 / (1 + Math.log(-1.0*expFactor));
+          PRPSum = PRPSum + PRP[i];
+      }
+
+      PRP_Value = PRPSum / (1.15 * volume.length);
+      
+      $('#number').html("Heart PRP Value: " + PRP_Value);
+
+      console.log(PRP_Value);
     }
 });
