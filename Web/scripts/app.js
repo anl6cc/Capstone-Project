@@ -123,12 +123,22 @@ function plot(all, seriesOptions)
       rendererOptions: {
           numberColumns: 3,
       },
-      seriesToggle: true
-    }
-}
-     series: seriesOptions // need a series to constrain to y for every line
+    seriesToggle: true,
+    },
+    series: seriesOptions
+    /*seriesDefaults:
+    {
+      dragable: {
+          color: '#ff3366',
+          constrainTo: 'y'
+      },
+      markerOptions: {
+        show: false,
+        size: 2
+     }
+    }*/
   });
-
+  console.log(JSON.stringify(seriesOptions));
     //console.log(JSON.stringify(plot1.series[0].data));
 }
 
@@ -198,7 +208,6 @@ $(document).ready(function () {
   // plot the data for the line chart
   plot(arg, series);
 
-<<<<<<< HEAD
   /////////////
   //BAR CHART//
   /////////////
@@ -229,7 +238,6 @@ $(document).ready(function () {
           $('#info2').html('Nothing');
       }
   );
-=======
   returnPRP(totalHeart[0], totalHeart[1]);
 
   $('#chart1').bind('jqplotDragStart',
@@ -239,7 +247,6 @@ $(document).ready(function () {
       xClick = data.x;
       yClick = data.y;
     });
->>>>>>> 2c7cea7b1d57cdbc4bed36c2ecc57c487ab155f9
 
   $('#chart1').bind('jqplotDragStop',
     function (seriesIndex, pointIndex, pixelposition, data) {
@@ -305,11 +312,11 @@ $(document).ready(function () {
   $.jqplot.postDrawSeriesHooks.push(updatedSeries);
   
     function updatedSeries(sctx, options) {
-      /*console.log(JSON.stringify(sctx));
+      console.log(JSON.stringify(sctx));
       for(var i=0; i<plot1.series[0].data.length; i++)
       {
           plot1.series[0].data[i][1] += 0.01;
-      }*/
+      }
     }
 
     function returnPRP(dose, volume)
