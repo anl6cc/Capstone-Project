@@ -1,7 +1,7 @@
 /*rules for the plot target div.  These will be cascaded down to all plot elements according to css rules*/
 .jqplot-target {
     position: relative;
-    color: #666666;
+    color: #666666; /* #666666; */
     font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
     font-size: 1em;
 /*    height: 300px;
@@ -97,7 +97,7 @@
 }
 
 .jqplot-yaxis-label {
-    margin-right: 30px; /* changed to fix axis; 10 originally */
+    margin-right: 10px; /* changed to fix axis; 10 originally */
 /*    text-align: center;*/
     font-size: 11pt;
     position: absolute;
@@ -189,7 +189,7 @@ div.jqplot-table-legend-swatch {
     top: 0px;
     left: 0px;
     padding-bottom: 0.5em;
-    font-size: 1.5em;
+    font-size: 3em;
 }
 
 table.jqplot-cursor-tooltip {

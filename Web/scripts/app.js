@@ -93,6 +93,7 @@ function plot(all, seriesOptions)
      axes: {
         xaxis:{
           label:'Dose (divide by 100 to get dose / Gy)',
+          labelRenderer: $.jqplot.CanvasAxisLabelRenderer,
           min: 0,
           tickOptions: {
               mark: 'inside'
@@ -211,9 +212,9 @@ $(document).ready(function () {
   /////////////
   //BAR CHART//
   /////////////
-  var s1 = [2];
-  var s2 = [7];
-  var ticks = ['Cumulative'];
+  var s1 = [0.2];
+  var s2 = [0.7];
+  var ticks = ['PRP'];
   plot2 = $.jqplot('chart2', [s1, s2], {
       seriesDefaults: {
           renderer:$.jqplot.BarRenderer,
