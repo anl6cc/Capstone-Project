@@ -62,7 +62,7 @@ function plot(all, seriesOptions)
     
     // generate the jqplot
     plot1 = $.jqplot('chart1', all,{
-     title: 'Heart (blue) vs Lung (orange)',
+    title: 'Heart (blue) vs Lung (orange)',
      // axesDefaults: {
      //    tickRenderer: $.jqplot.CanvasAxisTickRenderer ,
      //    tickOptions: {
@@ -121,11 +121,11 @@ function plot(all, seriesOptions)
     legend: {
         show: true,
         renderer: $.jqplot.EnhancedLegendRenderer,
-        location: 's' ,
+        location: 'w' ,
         placement : "outside",
-        marginTop : "50px",
+        marginRight: '100px',
         rendererOptions: {
-            numberRows: 1
+            numberColumns: 1
         },
         seriesToggle: true
       },
@@ -225,8 +225,13 @@ $(document).ready(function () {
       },
       axes: {
           xaxis: {
+              label: 'Total',
               renderer: $.jqplot.CategoryAxisRenderer,
               ticks: ticks
+          },
+          yaxis:{
+            label:'Relative Volume',
+            labelRenderer: $.jqplot.CanvasAxisLabelRenderer
           }
       }
   });
