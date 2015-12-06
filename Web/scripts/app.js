@@ -119,13 +119,16 @@ function plot(all, seriesOptions)
          show: true
      },
     legend: {
-      renderer: $.jqplot.EnhancedLegendRenderer,
-      show: true,
-      rendererOptions: {
-          numberColumns: 3,
+        show: true,
+        renderer: $.jqplot.EnhancedLegendRenderer,
+        location: 's' ,
+        placement : "outside",
+        marginTop : "50px",
+        rendererOptions: {
+            numberRows: 1
+        },
+        seriesToggle: true
       },
-    seriesToggle: true,
-    },
     series: seriesOptions
     /*seriesDefaults:
     {
