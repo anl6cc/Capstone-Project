@@ -215,10 +215,14 @@ $(document).ready(function () {
   /////////////
   //BAR CHART//
   /////////////
-  var s1 = [0.2];
-  var s2 = [0.7];
+  var heartPRP = returnPRP(totalHeart);
+  var lungPRP = returnPRP(totalLung);
+
+  console.log(heartPRP);
+  console.log(lungPRP);
+
   var ticks = ['PRP'];
-  plot2 = $.jqplot('chart2', [s1, s2], {
+  plot2 = $.jqplot('chart2', [[heartPRP], [lungPRP]], {
       seriesDefaults: {
           renderer:$.jqplot.BarRenderer,
           pointLabels: { show: true }
@@ -251,7 +255,6 @@ $(document).ready(function () {
 
   $('#chart1').bind('jqplotDragStart',
     function (seriesIndex, pointIndex, pixelposition, data) {
-      console.log("loooooooooooooool");
       console.log(data);
       xClick = data.x;
       yClick = data.y;
@@ -310,11 +313,27 @@ $(document).ready(function () {
       // plot the data
       plot(arg, series);
 
-      returnPRP(totalHeart[0], totalHeart[1]);
+      var heartPRP = returnPRP(totalHeart);
+      var lungPRP = returnPRP(totalLung);
+
+      var ticks = ['PRP'];
+      plot2 = $.jqplot('chart2', [[heartPRP], [lungPRP]], {
+          seriesDefaults: {
+              renderer:$.jqplot.BarRenderer,
+              pointLabels: { show: true }
+          },
+          axes: {
+              xaxis: {
+                  renderer: $.jqplot.CategoryAxisRenderer,
+                  ticks: ticks
+              }
+          }
+      });
 
       // replot the data
       // so the graphs don't stack
       plot1.replot();
+      plot2.replot();
 
   }); 
 
@@ -328,7 +347,7 @@ $(document).ready(function () {
       }
     }
 
-    function returnPRP(dose, volume)
+    function returnPRP(data)
     {
       var con = -2.98;
       var c_d = 0.0356;
@@ -338,17 +357,21 @@ $(document).ready(function () {
       var c_dv = 0.221;
       var PRPSum = 0;
       var PRP = [];
-      for(var i=volume.length-1; i>-1; i--)
+      for(var i=data.length-1; i>-1; i--)
       {
-          var expFactor = con + c_d * dose[i] + c_v * volume[i] + c_d2 * Math.pow(dose[i], 2) + c_v2 * Math.pow(volume[i], 2) + c_dv * dose[i]*volume[i];
+          var dose = data[i][0];
+          //console.log("Dose: " + dose);
+          var volume = data[i][1];
+          //console.log("Vol: " +volume);
+          var expFactor = con + c_d * dose + c_v * volume + c_d2 * Math.pow(dose, 2) + c_v2 * Math.pow(volume, 2) + c_dv * dose*volume;
           PRP[i] = 1 / (1 + Math.log(-1.0*expFactor));
-          PRPSum = PRPSum + PRP[i];
+          if(!isNaN(PRP[i]))
+            PRPSum += PRP[i];
       }
 
-      PRP_Value = PRPSum / (1.15 * volume.length);
-      
-      $('#number').html("Heart PRP Value: " + PRP_Value);
+      //console.log(PRPSum);
+      var PRP_Value = PRPSum / (1.15 * data.length);
 
-      console.log(PRP_Value);
+      return PRP_Value;
     }
 });
