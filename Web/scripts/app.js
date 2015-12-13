@@ -3,6 +3,9 @@ var plot1;
 var xClick;
 var yClick;
 
+//global variables
+var heart = [];
+var lung = [];
 // -------------------------------------------------------------------------------------------------------------
 // Read in patient files
 
@@ -108,8 +111,6 @@ function plot(all, seriesOptions)
 
 // choose a plan to load to display on the graph
 function loadGraph (index){
-  var heart = [];
-  var lung = [];
    // read in the patient files
   heart.push(readTextFile("./patient_data/LungDVHAD/heart/4-beam_Esop.heart.ddvh")); // bottom
   lung.push(readTextFile("./patient_data/LungDVHAD/lung/4-beam_Esop.L_lung.ddvh"));
@@ -170,7 +171,6 @@ function loadGraph (index){
           }
       }
   });
-<<<<<<< HEAD
 
   // adjust the graph according to the end of the drag
 $('#chart1').bind('jqplotDragStop',
@@ -242,11 +242,6 @@ function (seriesIndex, pointIndex, pixelposition, data) {
   // replot the data so graphs don't stack
   plot1.replot();
   plot2.replot();
-  //$.jqplot.postDrawSeriesHooks.push(updatedSeries);
-=======
-  plot1.replot();
-  plot2.replot();
->>>>>>> b9c80c918e280b587e61b418be9e6dfd35d57168
 }
 
 //---------------------------------------------------------------------------------------------------------------
