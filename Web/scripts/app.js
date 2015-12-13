@@ -1,37 +1,34 @@
-// JSON and node work on Aluu's computer
-//console.log(JSON.stringify(vis));
-
-/*
-var blah = [1, 2, 3];
-console.log(blah.slice(0,2).reduce(function(a, b) { return a + b; }, 0));
-*/
+// variables for the plot
 var plot1;
 var xClick;
 var yClick;
 
+// -------------------------------------------------------------------------------------------------------------
+// Read in patient files
+
 // read in the DDVH file
 function readTextFile(file)
+{
+  var rawFile = new XMLHttpRequest();
+  rawFile.open("GET", file, false);
+  rawFile.onreadystatechange = function ()
   {
-    var rawFile = new XMLHttpRequest();
-    rawFile.open("GET", file, false);
-    rawFile.onreadystatechange = function ()
-    {
-        if(rawFile.readyState === 4)
-        {
-            if(rawFile.status === 200 || rawFile.status == 0)
-            {
-                // if everything is good then obtain the string and initialize the array for plotting
-                var dataString = rawFile.responseText;
-                return initialize(dataString);
-            }
-        }
-        return [];
-    }
-    rawFile.send(null);
-
-    // return what is returned when the file reading is complete
-    return rawFile.onreadystatechange.call();
+      if(rawFile.readyState === 4)
+      {
+          if(rawFile.status === 200 || rawFile.status == 0)
+          {
+              // if everything is good then obtain the string and initialize the array for plotting
+              var dataString = rawFile.responseText;
+              return initialize(dataString);
+          }
+      }
+      return [];
   }
+  rawFile.send(null);
+
+  // return what is returned when the file reading is complete
+  return rawFile.onreadystatechange.call();
+}
 
 // read the data from the text file string to obtain an array to pass to jqplot
 function initialize(dataString)
@@ -45,7 +42,6 @@ function initialize(dataString)
   for(var i=1; i < num + 1; i++)
   {
     var pos = lines[i].split(" ");
-    // console.log(pos[1]);
     s1.push([parseFloat(pos[0]), parseFloat(pos[1])]);
   }
 
@@ -53,12 +49,13 @@ function initialize(dataString)
   return s1;
 }
 
+// ------------------------------------------------------------------------------------------------------------
+// Create the plot using jqplot
+
 // after reading all files generate the plot given the data points and options to move only in the y direction
 function plot(all, seriesOptions)
 {
     $.jqplot.config.enablePlugins = true;
-
-    //console.log(JSON.stringify(all));
     
     // generate the jqplot
     plot1 = $.jqplot('chart1', all,{
@@ -103,49 +100,16 @@ function plot(all, seriesOptions)
         seriesToggle: true
       },
     series: seriesOptions
-    /*seriesDefaults:
-    {
-      dragable: {
-          color: '#ff3366',
-          constrainTo: 'y'
-      },
-      markerOptions: {
-        show: false,
-        size: 2
-     }
-    }*/
   });
-  console.log(JSON.stringify(seriesOptions));
-    //console.log(JSON.stringify(plot1.series[0].data));
 }
 
-// convert the data from dvh volume to cdvh volume
-// uses method from Watkin's python program
-function convert(data)
-{
-  var dose = [];
-  var volume = [];
-  var total_volume = 0;
-  for(var i=0; i<data.length; i++)
-  {
-    dose.push(data[i][0]);
-    volume.push(data[i][1]);
-    total_volume += data[i][1];
-  }
+//-----------------------------------------------------------------------------------------------------------------
+// Plot graph
 
-  totalData = [];
-  for(var i=data.length-1; i>-1; i--)
-  {
-    var sum = volume.slice(0,i).reduce(function(a, b) { return a + b; }, 0);
-    totalData[i] = [dose[i], 1 - sum/total_volume];
-  }
-
-  return totalData;
-}
+// choose a plan to load to display on the graph
 function loadGraph (index){
   var heart = [];
   var lung = [];
-
    // read in the patient files
   heart.push(readTextFile("./patient_data/LungDVHAD/heart/4-beam_Esop.heart.ddvh")); // bottom
   lung.push(readTextFile("./patient_data/LungDVHAD/lung/4-beam_Esop.L_lung.ddvh"));
@@ -189,9 +153,6 @@ function loadGraph (index){
   var heartPRP = returnPRP(totalHeart);
   var lungPRP = returnPRP(totalLung);
 
-  console.log(heartPRP);
-  console.log(lungPRP);
-
   var ticks = ['PRP'];
   plot2 = $.jqplot('chart2', [[heartPRP], [lungPRP]], {
       seriesDefaults: {
@@ -210,277 +171,104 @@ function loadGraph (index){
       }
   });
 
-  $('#chart2').bind('jqplotDataHighlight', 
-      function (ev, seriesIndex, pointIndex, data) {
-          $('#info2').html('series: '+seriesIndex+', point: '+pointIndex+', data: '+data);
+  // adjust the graph according to the end of the drag
+$('#chart1').bind('jqplotDragStop',
+function (seriesIndex, pointIndex, pixelposition, data) {
+  // convert to cumulative
+  var totalHeart;
+  var totalLung;
+
+  // if you moved up go to the top plan
+  if(pointIndex.y > yClick)
+  {
+      totalHeart = convert(heart[0]);
+      totalLung = convert(lung[0]);
+  }
+  // if you moved down go to the bottom plan
+  else
+  {
+      totalHeart = convert(heart[1]);
+      totalLung = convert(lung[1]);
+  }
+
+  // argument to be passed to plot the data
+  var arg = [totalHeart, totalLung];
+  //var arg = totalHeart;
+
+  // generate an array to pass in series options for all data sets
+  var series = [];
+  for(var i=0; i<arg.length; i++)
+  {
+    series.push({
+      dragable: {
+          color: '#ff3366',
+          constrainTo: 'y'
+      },
+      markerOptions: {
+        show: false,
+        size: 2
       }
-  );
-       
-  $('#chart2').bind('jqplotDataUnhighlight', 
-      function (ev) {
-          $('#info2').html('Nothing');
-      }
-  );
-  returnPRP(totalHeart[0], totalHeart[1]);
-
-  $('#chart1').bind('jqplotDragStart', 
-  function (seriesIndex, pointIndex, pixelposition, data) {
-      console.log(data);
-      xClick = data.x;
-      yClick = data.y;
-  });
-
-  $('#chart1').bind('jqplotDragStop',
-  function (seriesIndex, pointIndex, pixelposition, data) {
-    //console.log(seriesIndex);
-    console.log(pointIndex);
-    //console.log(pixelposition); // this is an object with the new coordinates
-    //console.log(data);
-
-    // convert to cumulative
-    var totalHeart;
-    var totalLung;
-
-    // if you moved up go to the top plan
-    if(pointIndex.y > yClick)
-    {
-        totalHeart = convert(heart[0]);
-        totalLung = convert(lung[0]);
-    }
-    // if you moved down go to the bottom plan
-    else
-    {
-        totalHeart = convert(heart[1]);
-        totalLung = convert(lung[1]);
-    }
-
-    // argument to be passed to plot the data
-    var arg = [totalHeart, totalLung];
-    //var arg = totalHeart;
-
-    // generate an array to pass in series options for all data sets
-    var series = [];
-    for(var i=0; i<arg.length; i++)
-    {
-      series.push({
-        dragable: {
-            color: '#ff3366',
-            constrainTo: 'y'
-        },
-        markerOptions: {
-          show: false,
-          size: 2
-        }
-      });
-    }
-
-    // plot the data
-    plot(arg, series);
-
-    var heartPRP = returnPRP(totalHeart);
-    var lungPRP = returnPRP(totalLung);
-
-    var ticks = ['PRP'];
-    plot2 = $.jqplot('chart2', [[heartPRP], [lungPRP]], {
-        seriesDefaults: {
-            renderer:$.jqplot.BarRenderer,
-            pointLabels: { show: true }
-        },
-        axes: {
-            xaxis: {
-                renderer: $.jqplot.CategoryAxisRenderer,
-                ticks: ticks
-            },
-            yaxis:{
-              label:'Percent (%)',
-              labelRenderer: $.jqplot.CanvasAxisLabelRenderer
-            }
-        }
     });
+  }
 
-    // replot the data
-    // so the graphs don't stack
-    
+  // plot the data
+  plot(arg, series);
+  plot1.replot();
+  plot2.replot();    
 
-  }); 
+  var heartPRP = returnPRP(totalHeart);
+  var lungPRP = returnPRP(totalLung);
+
+  var ticks = ['PRP'];
+  plot2 = $.jqplot('chart2', [[heartPRP], [lungPRP]], {
+      seriesDefaults: {
+          renderer:$.jqplot.BarRenderer,
+          pointLabels: { show: true }
+      },
+      axes: {
+          xaxis: {
+              renderer: $.jqplot.CategoryAxisRenderer,
+              ticks: ticks
+          },
+          yaxis:{
+            label:'Percent (%)',
+            labelRenderer: $.jqplot.CanvasAxisLabelRenderer
+          }
+      }
+  });
+}); 
+
+  // replot the data so graphs don't stack
   plot1.replot();
   plot2.replot();
-  $.jqplot.postDrawSeriesHooks.push(updatedSeries);
+  //$.jqplot.postDrawSeriesHooks.push(updatedSeries);
 }
 
-// called at the beginning
-//$(document).ready(function () {
-  
-  // var heart = [];
-  // var lung = [];
+//---------------------------------------------------------------------------------------------------------------
+// Highlight and Click Methods
 
-  // // read in the patient files
-  // heart.push(readTextFile("./patient_data/LungDVHAD/heart/4-beam_Esop.heart.ddvh")); // bottom
-  // lung.push(readTextFile("./patient_data/LungDVHAD/lung/4-beam_Esop.L_lung.ddvh"));
+// display data highlight
+$('#chart2').bind('jqplotDataHighlight', 
+    function (ev, seriesIndex, pointIndex, data) {
+        $('#info2').html('series: '+seriesIndex+', point: '+pointIndex+', data: '+data);
+    }
+);
+     
+// display data unhighlight
+$('#chart2').bind('jqplotDataUnhighlight', 
+    function (ev) {
+        $('#info2').html('Nothing');
+    }
+);
 
-  // heart.push(readTextFile("./patient_data/LungDVHAD/heart/9-beam_Esop.heart.ddvh")); // top
-  // lung.push(readTextFile("./patient_data/LungDVHAD/lung/9-beam_Esop.L_lung.ddvh"));
+// set the start of the drag
+$('#chart1').bind('jqplotDragStart', 
+function (seriesIndex, pointIndex, pixelposition, data) {
+    xClick = data.x;
+    yClick = data.y;
+});
 
-  // heart.push(readTextFile("./patient_data/LungDVHAD/heart/38-beamNCP_Esop.heart.ddvh")); // middle
-  // lung.push(readTextFile("./patient_data/LungDVHAD/lung/38-beamNCP_Esop.L_lung.ddvh"));
-
-  // // convert to cumulative
-  // var totalHeart = convert(heart[2]);
-  // var totalLung = convert(lung[2]);
-
-  // // argument to be passed to plot the data
-  // var arg = [totalHeart, totalLung];
-  // //var arg = totalHeart;
-
-  // // generate an array to pass in series options for all data sets
-  // var series = [];
-  // for(var i=0; i<arg.length; i++)
-  // {
-  //   series.push({
-  //     dragable: {
-  //         color: '#ff3366',
-  //         constrainTo: 'y'
-  //     },
-  //     markerOptions: {
-  //       show: false,
-  //       size: 2
-  //    }
-  //   });
-  // }
-
-  // // plot the data for the line chart
-  // plot(arg, series);
-
-  // /////////////
-  // //BAR CHART//
-  // /////////////
-  // var heartPRP = returnPRP(totalHeart);
-  // var lungPRP = returnPRP(totalLung);
-
-  // console.log(heartPRP);
-  // console.log(lungPRP);
-
-  // var ticks = ['PRP'];
-  // plot2 = $.jqplot('chart2', [[heartPRP], [lungPRP]], {
-  //     seriesDefaults: {
-  //         renderer:$.jqplot.BarRenderer,
-  //         pointLabels: { show: true }
-  //     },
-  //     axes: {
-  //         xaxis: {
-  //             renderer: $.jqplot.CategoryAxisRenderer,
-  //             ticks: ticks
-  //         },
-  //         yaxis:{
-  //           label:'Percent (%)',
-  //           labelRenderer: $.jqplot.CanvasAxisLabelRenderer
-  //         }
-  //     }
-  // });
-
-  // $('#chart2').bind('jqplotDataHighlight', 
-  //     function (ev, seriesIndex, pointIndex, data) {
-  //         $('#info2').html('series: '+seriesIndex+', point: '+pointIndex+', data: '+data);
-  //     }
-  // );
-       
-  // $('#chart2').bind('jqplotDataUnhighlight', 
-  //     function (ev) {
-  //         $('#info2').html('Nothing');
-  //     }
-  // );
-  // returnPRP(totalHeart[0], totalHeart[1]);
-
-  // $('#chart1').bind('jqplotDragStart',
-  //   function (seriesIndex, pointIndex, pixelposition, data) {
-  //     console.log(data);
-  //     xClick = data.x;
-  //     yClick = data.y;
-  //   });
-
-  // $('#chart1').bind('jqplotDragStop',
-  //   function (seriesIndex, pointIndex, pixelposition, data) {
-  //     //console.log(seriesIndex);
-  //     console.log(pointIndex);
-  //     //console.log(pixelposition); // this is an object with the new coordinates
-  //     //console.log(data);
-
-  //     // convert to cumulative
-  //     var totalHeart;
-  //     var totalLung;
-
-  //     // if you moved up go to the top plan
-  //     if(pointIndex.y > yClick)
-  //     {
-  //         totalHeart = convert(heart[0]);
-  //         totalLung = convert(lung[0]);
-  //     }
-  //     // if you moved down go to the bottom plan
-  //     else
-  //     {
-  //         totalHeart = convert(heart[1]);
-  //         totalLung = convert(lung[1]);
-  //     }
-
-  //     //var x = pixelposition.xaxis;
-
-  //     //console.log(JSON.stringify(totalHeart));
-  //     //console.log(heart[0][x]);
-  //     //console.log(x);
-
-  //     // argument to be passed to plot the data
-  //     var arg = [totalHeart, totalLung];
-  //     //var arg = totalHeart;
-
-  //     // generate an array to pass in series options for all data sets
-  //     var series = [];
-  //     for(var i=0; i<arg.length; i++)
-  //     {
-  //       series.push({
-  //         dragable: {
-  //             color: '#ff3366',
-  //             constrainTo: 'y'
-  //         },
-  //         markerOptions: {
-  //           show: false,
-  //           size: 2
-  //        }
-  //       });
-  //     }
-
-  //     // plot the data
-  //     plot(arg, series);
-
-  //     var heartPRP = returnPRP(totalHeart);
-  //     var lungPRP = returnPRP(totalLung);
-
-  //     var ticks = ['PRP'];
-  //     plot2 = $.jqplot('chart2', [[heartPRP], [lungPRP]], {
-  //         seriesDefaults: {
-  //             renderer:$.jqplot.BarRenderer,
-  //             pointLabels: { show: true }
-  //         },
-  //         axes: {
-  //             xaxis: {
-  //                 renderer: $.jqplot.CategoryAxisRenderer,
-  //                 ticks: ticks
-  //             },
-  //             yaxis:{
-  //               label:'Percent (%)',
-  //               labelRenderer: $.jqplot.CanvasAxisLabelRenderer
-  //             }
-  //         }
-  //     });
-
-  //     // replot the data
-  //     // so the graphs don't stack
-  //     plot1.replot();
-  //     plot2.replot();
-
-  // }); 
-
-  // $.jqplot.postDrawSeriesHooks.push(updatedSeries);
-  
+// possible way to move whole line
 function updatedSeries(sctx, options) {
   console.log(JSON.stringify(sctx));
   for(var i=0; i<plot1.series[0].data.length; i++)
@@ -489,6 +277,34 @@ function updatedSeries(sctx, options) {
   }
 }
 
+//--------------------------------------------------------------------------------------------------------
+// Utility Methods
+
+// convert the data from dvh volume to cdvh volume
+// uses method from Watkin's python program
+function convert(data)
+{
+  var dose = [];
+  var volume = [];
+  var total_volume = 0;
+  for(var i=0; i<data.length; i++)
+  {
+    dose.push(data[i][0]);
+    volume.push(data[i][1]);
+    total_volume += data[i][1];
+  }
+
+  totalData = [];
+  for(var i=data.length-1; i>-1; i--)
+  {
+    var sum = volume.slice(0,i).reduce(function(a, b) { return a + b; }, 0);
+    totalData[i] = [dose[i], 1 - sum/total_volume];
+  }
+
+  return totalData;
+}
+
+// return the probability in percent
 function returnPRP(data)
 {
   var con = -2.98;
@@ -502,20 +318,22 @@ function returnPRP(data)
   for(var i=data.length-1; i>-1; i--)
   {
       var dose = data[i][0];
-      //console.log("Dose: " + dose);
       var volume = data[i][1];
-      //console.log("Vol: " +volume);
       var expFactor = con + c_d * dose + c_v * volume + c_d2 * Math.pow(dose, 2) + c_v2 * Math.pow(volume, 2) + c_dv * dose*volume;
       PRP[i] = 1 / (1 + Math.log(-1.0*expFactor));
       if(!isNaN(PRP[i]))
         PRPSum += PRP[i];
   }
 
-  //console.log(PRPSum);
   var PRP_Value = PRPSum / (1.15 * data.length);
 
   return PRP_Value * 100;
 }
+
+// ---------------------------------------------------------------------------------------------------------------
+// Starting function
+
+// on ready function
 $(document).ready(function (){
   var nav = function () {
     $('.gw-nav > li > a').click(function () {
