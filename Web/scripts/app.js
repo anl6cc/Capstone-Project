@@ -229,12 +229,11 @@ $(document).ready(function () {
       },
       axes: {
           xaxis: {
-              label: 'Total',
               renderer: $.jqplot.CategoryAxisRenderer,
               ticks: ticks
           },
           yaxis:{
-            label:'Relative Volume',
+            label:'Percent (%)',
             labelRenderer: $.jqplot.CanvasAxisLabelRenderer
           }
       }
@@ -326,6 +325,10 @@ $(document).ready(function () {
               xaxis: {
                   renderer: $.jqplot.CategoryAxisRenderer,
                   ticks: ticks
+              },
+              yaxis:{
+                label:'Percent (%)',
+                labelRenderer: $.jqplot.CanvasAxisLabelRenderer
               }
           }
       });
@@ -372,6 +375,6 @@ $(document).ready(function () {
       //console.log(PRPSum);
       var PRP_Value = PRPSum / (1.15 * data.length);
 
-      return PRP_Value;
+      return PRP_Value * 100;
     }
 });
