@@ -170,6 +170,7 @@ function loadGraph (index){
           }
       }
   });
+<<<<<<< HEAD
 
   // adjust the graph according to the end of the drag
 $('#chart1').bind('jqplotDragStop',
@@ -242,6 +243,10 @@ function (seriesIndex, pointIndex, pixelposition, data) {
   plot1.replot();
   plot2.replot();
   //$.jqplot.postDrawSeriesHooks.push(updatedSeries);
+=======
+  plot1.replot();
+  plot2.replot();
+>>>>>>> b9c80c918e280b587e61b418be9e6dfd35d57168
 }
 
 //---------------------------------------------------------------------------------------------------------------
@@ -335,6 +340,102 @@ function returnPRP(data)
 
 // on ready function
 $(document).ready(function (){
+  loadGraph(2);
+  $('#chart2').bind('jqplotDataHighlight', 
+      function (ev, seriesIndex, pointIndex, data) {
+          $('#info2').html('series: '+seriesIndex+', point: '+pointIndex+', data: '+data);
+      }
+  );
+       
+  $('#chart2').bind('jqplotDataUnhighlight', 
+      function (ev) {
+          $('#info2').html('Nothing');
+      }
+  );
+
+  $('#chart1').bind('jqplotDragStart', 
+  function (seriesIndex, pointIndex, pixelposition, data) {
+      console.log(data);
+      xClick = data.x;
+      yClick = data.y;
+  });
+
+  $('#chart1').bind('jqplotDragStop',
+  function (seriesIndex, pointIndex, pixelposition, data) {
+    //console.log(seriesIndex);
+    console.log(pointIndex);
+    //console.log(pixelposition); // this is an object with the new coordinates
+    //console.log(data);
+
+    // convert to cumulative
+    var totalHeart;
+    var totalLung;
+
+    // if you moved up go to the top plan
+    if(pointIndex.y > yClick)
+    {
+        totalHeart = convert(heart[0]);
+        totalLung = convert(lung[0]);
+    }
+    // if you moved down go to the bottom plan
+    else
+    {
+        totalHeart = convert(heart[1]);
+        totalLung = convert(lung[1]);
+    }
+
+    // argument to be passed to plot the data
+    var arg = [totalHeart, totalLung];
+    //var arg = totalHeart;
+
+    // generate an array to pass in series options for all data sets
+    var series = [];
+    for(var i=0; i<arg.length; i++)
+    {
+      series.push({
+        dragable: {
+            color: '#ff3366',
+            constrainTo: 'y'
+        },
+        markerOptions: {
+          show: false,
+          size: 2
+        }
+      });
+    }
+
+    // plot the data
+    plot(arg, series);
+
+    var heartPRP = returnPRP(totalHeart);
+    var lungPRP = returnPRP(totalLung);
+
+    var ticks = ['PRP'];
+    plot2 = $.jqplot('chart2', [[heartPRP], [lungPRP]], {
+        seriesDefaults: {
+            renderer:$.jqplot.BarRenderer,
+            pointLabels: { show: true }
+        },
+        axes: {
+            xaxis: {
+                renderer: $.jqplot.CategoryAxisRenderer,
+                ticks: ticks
+            },
+            yaxis:{
+              label:'Percent (%)',
+              labelRenderer: $.jqplot.CanvasAxisLabelRenderer
+            }
+        }
+    });
+
+    // replot the data
+    // so the graphs don't stack
+    
+
+  }); 
+  plot1.replot();
+  plot2.replot();
+  //$.jqplot.postDrawSeriesHooks.push(updatedSeries);
   var nav = function () {
     $('.gw-nav > li > a').click(function () {
         var gw_nav = $('.gw-nav');
@@ -363,4 +464,5 @@ $(document).ready(function (){
     });
   };
   nav();
+
 });
