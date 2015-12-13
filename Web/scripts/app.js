@@ -6,6 +6,7 @@ var yClick;
 //global variables
 var heart = [];
 var lung = [];
+
 // -------------------------------------------------------------------------------------------------------------
 // Read in patient files
 
@@ -172,101 +173,10 @@ function loadGraph (index){
       }
   });
 
-  // adjust the graph according to the end of the drag
-$('#chart1').bind('jqplotDragStop',
-function (seriesIndex, pointIndex, pixelposition, data) {
-  // convert to cumulative
-  var totalHeart;
-  var totalLung;
-
-  // if you moved up go to the top plan
-  if(pointIndex.y > yClick)
-  {
-      totalHeart = convert(heart[0]);
-      totalLung = convert(lung[0]);
-  }
-  // if you moved down go to the bottom plan
-  else
-  {
-      totalHeart = convert(heart[1]);
-      totalLung = convert(lung[1]);
-  }
-
-  // argument to be passed to plot the data
-  var arg = [totalHeart, totalLung];
-  //var arg = totalHeart;
-
-  // generate an array to pass in series options for all data sets
-  var series = [];
-  for(var i=0; i<arg.length; i++)
-  {
-    series.push({
-      dragable: {
-          color: '#ff3366',
-          constrainTo: 'y'
-      },
-      markerOptions: {
-        show: false,
-        size: 2
-      }
-    });
-  }
-
-  // plot the data
-  plot(arg, series);
-  plot1.replot();
-  plot2.replot();    
-
-  var heartPRP = returnPRP(totalHeart);
-  var lungPRP = returnPRP(totalLung);
-
-  var ticks = ['PRP'];
-  plot2 = $.jqplot('chart2', [[heartPRP], [lungPRP]], {
-      seriesDefaults: {
-          renderer:$.jqplot.BarRenderer,
-          pointLabels: { show: true }
-      },
-      axes: {
-          xaxis: {
-              renderer: $.jqplot.CategoryAxisRenderer,
-              ticks: ticks
-          },
-          yaxis:{
-            label:'Percent (%)',
-            labelRenderer: $.jqplot.CanvasAxisLabelRenderer
-          }
-      }
-  });
-}); 
-
   // replot the data so graphs don't stack
   plot1.replot();
   plot2.replot();
 }
-
-//---------------------------------------------------------------------------------------------------------------
-// Highlight and Click Methods
-
-// display data highlight
-$('#chart2').bind('jqplotDataHighlight', 
-    function (ev, seriesIndex, pointIndex, data) {
-        $('#info2').html('series: '+seriesIndex+', point: '+pointIndex+', data: '+data);
-    }
-);
-     
-// display data unhighlight
-$('#chart2').bind('jqplotDataUnhighlight', 
-    function (ev) {
-        $('#info2').html('Nothing');
-    }
-);
-
-// set the start of the drag
-$('#chart1').bind('jqplotDragStart', 
-function (seriesIndex, pointIndex, pixelposition, data) {
-    xClick = data.x;
-    yClick = data.y;
-});
 
 // possible way to move whole line
 function updatedSeries(sctx, options) {
@@ -334,8 +244,12 @@ function returnPRP(data)
 // Starting function
 
 // on ready function
-$(document).ready(function (){
+$(document).ready(function () {
   loadGraph(2);
+
+//---------------------------------------------------------------------------------------------------------------
+// Highlight and Click Methods
+
   $('#chart2').bind('jqplotDataHighlight', 
       function (ev, seriesIndex, pointIndex, data) {
           $('#info2').html('series: '+seriesIndex+', point: '+pointIndex+', data: '+data);
@@ -355,81 +269,73 @@ $(document).ready(function (){
       yClick = data.y;
   });
 
-  $('#chart1').bind('jqplotDragStop',
-  function (seriesIndex, pointIndex, pixelposition, data) {
-    //console.log(seriesIndex);
-    console.log(pointIndex);
-    //console.log(pixelposition); // this is an object with the new coordinates
-    //console.log(data);
+// adjust the graph according to the end of the drag
+$('#chart1').bind('jqplotDragStop',
+function (seriesIndex, pointIndex, pixelposition, data) {
+  // convert to cumulative
+  var totalHeart;
+  var totalLung;
 
-    // convert to cumulative
-    var totalHeart;
-    var totalLung;
+  // if you moved up go to the top plan
+  if(pointIndex.y > yClick)
+  {
+      totalHeart = convert(heart[0]);
+      totalLung = convert(lung[0]);
+  }
+  // if you moved down go to the bottom plan
+  else
+  {
+      totalHeart = convert(heart[1]);
+      totalLung = convert(lung[1]);
+  }
 
-    // if you moved up go to the top plan
-    if(pointIndex.y > yClick)
-    {
-        totalHeart = convert(heart[0]);
-        totalLung = convert(lung[0]);
-    }
-    // if you moved down go to the bottom plan
-    else
-    {
-        totalHeart = convert(heart[1]);
-        totalLung = convert(lung[1]);
-    }
+  // argument to be passed to plot the data
+  var arg = [totalHeart, totalLung];
+  //var arg = totalHeart;
 
-    // argument to be passed to plot the data
-    var arg = [totalHeart, totalLung];
-    //var arg = totalHeart;
-
-    // generate an array to pass in series options for all data sets
-    var series = [];
-    for(var i=0; i<arg.length; i++)
-    {
-      series.push({
-        dragable: {
-            color: '#ff3366',
-            constrainTo: 'y'
-        },
-        markerOptions: {
-          show: false,
-          size: 2
-        }
-      });
-    }
-
-    // plot the data
-    plot(arg, series);
-
-    var heartPRP = returnPRP(totalHeart);
-    var lungPRP = returnPRP(totalLung);
-
-    var ticks = ['PRP'];
-    plot2 = $.jqplot('chart2', [[heartPRP], [lungPRP]], {
-        seriesDefaults: {
-            renderer:$.jqplot.BarRenderer,
-            pointLabels: { show: true }
-        },
-        axes: {
-            xaxis: {
-                renderer: $.jqplot.CategoryAxisRenderer,
-                ticks: ticks
-            },
-            yaxis:{
-              label:'Percent (%)',
-              labelRenderer: $.jqplot.CanvasAxisLabelRenderer
-            }
-        }
+  // generate an array to pass in series options for all data sets
+  var series = [];
+  for(var i=0; i<arg.length; i++)
+  {
+    series.push({
+      dragable: {
+          color: '#ff3366',
+          constrainTo: 'y'
+      },
+      markerOptions: {
+        show: false,
+        size: 2
+      }
     });
+  }
 
-    // replot the data
-    // so the graphs don't stack
-    
-
-  }); 
+  // plot the data
+  plot(arg, series);
   plot1.replot();
-  plot2.replot();
+  plot2.replot();    
+
+  var heartPRP = returnPRP(totalHeart);
+  var lungPRP = returnPRP(totalLung);
+
+  var ticks = ['PRP'];
+  plot2 = $.jqplot('chart2', [[heartPRP], [lungPRP]], {
+      seriesDefaults: {
+          renderer:$.jqplot.BarRenderer,
+          pointLabels: { show: true }
+      },
+      axes: {
+          xaxis: {
+              renderer: $.jqplot.CategoryAxisRenderer,
+              ticks: ticks
+          },
+          yaxis:{
+            label:'Percent (%)',
+            labelRenderer: $.jqplot.CanvasAxisLabelRenderer
+          }
+      }
+  });
+}); 
+
   //$.jqplot.postDrawSeriesHooks.push(updatedSeries);
   var nav = function () {
     $('.gw-nav > li > a').click(function () {
