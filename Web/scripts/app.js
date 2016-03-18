@@ -1,5 +1,6 @@
 // variables for the plot
 var plot1;
+var plot2;
 var xClick;
 var yClick;
 
@@ -63,10 +64,10 @@ function plot(all, seriesOptions)
     
     // generate the jqplot
     plot1 = $.jqplot('chart1', all,{
-    title: 'Heart (blue) vs Lung (orange)',
+    title: 'Heart vs Lung',
      axes: {
         xaxis:{
-          label:'Dose (divide by 100 to get dose / Gy)',
+          label:'Dose (cGy)',
           labelRenderer: $.jqplot.CanvasAxisLabelRenderer,
           min: 0,
           tickOptions: {
@@ -110,9 +111,8 @@ function plot(all, seriesOptions)
 //-----------------------------------------------------------------------------------------------------------------
 // Plot graph
 
-// choose a plan to load to display on the graph
-function loadGraph (index){
-   // read in the patient files
+function readGraphs(){
+  // read in the patient files
   heart.push(readTextFile("./patient_data/LungDVHAD/heart/4-beam_Esop.heart.ddvh")); // bottom
   lung.push(readTextFile("./patient_data/LungDVHAD/lung/4-beam_Esop.L_lung.ddvh"));
 
@@ -121,7 +121,10 @@ function loadGraph (index){
 
   heart.push(readTextFile("./patient_data/LungDVHAD/heart/38-beamNCP_Esop.heart.ddvh")); // middle
   lung.push(readTextFile("./patient_data/LungDVHAD/lung/38-beamNCP_Esop.L_lung.ddvh"));
+}
 
+// choose a plan to load to display on the graph
+function loadGraph (index){
   // convert to cumulative
   var totalHeart = convert(heart[index]);
   var totalLung = convert(lung[index]);
@@ -132,6 +135,7 @@ function loadGraph (index){
 
   // generate an array to pass in series options for all data sets
   var series = [];
+  var seriesName = ['Heart', 'Lung'];
   for(var i=0; i<arg.length; i++)
   {
     series.push({
@@ -142,12 +146,17 @@ function loadGraph (index){
       markerOptions: {
         show: false,
         size: 2
-     }
+     },
+     label: seriesName[i]
     });
   }
 
   // plot the data for the line chart
   plot(arg, series);
+
+  var hello = [{dragable: {
+                  constrainTo: 'none'
+              }}];
 
   /////////////
   //BAR CHART//
@@ -155,23 +164,70 @@ function loadGraph (index){
   var heartPRP = returnPRP(totalHeart);
   var lungPRP = returnPRP(totalLung);
 
-  var ticks = ['PRP'];
-  plot2 = $.jqplot('chart2', [[heartPRP], [lungPRP]], {
+  //trying stuff
+/*
+  $('#chart2').jqplot([[['Heart', heartPRP], ['Lung', lungPRP]]], {
+      //seriesColors:['#00749F', '#00749F'],
       seriesDefaults: {
-          renderer:$.jqplot.BarRenderer,
-          pointLabels: { show: true }
+          renderer: $.jqplot.BarRenderer,
+          //pointLabels: { show: true },
+          rendererOptions: {
+                varyBarColor: true
+            }
       },
       axes: {
           xaxis: {
-              renderer: $.jqplot.CategoryAxisRenderer,
-              ticks: ticks
+              renderer: $.jqplot.CategoryAxisRenderer
           },
           yaxis:{
-            label:'Percent (%)',
+            label:'NTCP'//,
+            //labelRenderer: $.jqplot.CanvasAxisLabelRenderer
+          }
+      }
+  });
+*/
+/*
+  var line1 = [['Nissan', 4],['Porche', 6],['Acura', 2],['Aston Martin', 5],['Rolls Royce', 6]];
+
+    $('#chart2').jqplot([line1], {
+        title:'Default Bar Chart',
+        seriesDefaults:{
+            renderer:$.jqplot.BarRenderer,
+            rendererOptions: {
+                varyBarColor: true
+            }
+        },
+        axes:{
+            xaxis: {
+              renderer: $.jqplot.CategoryAxisRenderer
+          },
+        }
+    });
+
+*/
+
+
+
+  plot2 = $.jqplot('chart2', [[['Heart', heartPRP], ['Lung', lungPRP]]], {
+      //seriesColors:['#00749F', '#00749F'],
+      seriesDefaults: {
+          renderer:$.jqplot.BarRenderer,
+          pointLabels: { show: true },
+          rendererOptions: {
+                varyBarColor: true
+            }
+      },
+      axes: {
+          xaxis: {
+              renderer: $.jqplot.CategoryAxisRenderer
+          },
+          yaxis:{
+            label:'NTCP',
             labelRenderer: $.jqplot.CanvasAxisLabelRenderer
           }
       }
   });
+
 
   // replot the data so graphs don't stack
   plot1.replot();
@@ -245,7 +301,56 @@ function returnPRP(data)
 
 // on ready function
 $(document).ready(function () {
+
+  readGraphs();
+
   loadGraph(2);
+
+  //headers['Access-Control-Allow-Origin'] = 'http://localhost:8080';
+
+// -------------------------------------------------------------------------------------------------------------
+// Python fun
+
+/*
+  $("button").click(function(){
+    $.ajax({
+      type: "POST",
+      url: "test.txt",
+      data: "text",
+      crossDomain: true,
+      success: function(result) {
+        console.log('hi');
+        console.log(result);
+      },
+      error: function(result) {
+        console.log('no');
+        $('#alert').html("Could not read in Python file");
+      }
+    });
+  */
+/*
+  $("button").click(function(){
+    $.ajax('scripts/test.txt', {
+      type: "POST",
+      success: function(result) {
+        console.log('hi');
+        console.log(result);
+      },
+      error: function(result) {
+        console.log('no');
+        $('#alert').html("Could not read in Python file");
+      }
+    });
+  });
+*/
+
+$("button").click(function(){
+  $.get("test.txt", function(data, status){
+    console.log('hi');
+    console.log(data);
+  });
+});
+
 
 //---------------------------------------------------------------------------------------------------------------
 // Highlight and Click Methods
@@ -262,9 +367,10 @@ $(document).ready(function () {
       }
   );
 
+
   $('#chart1').bind('jqplotDragStart', 
   function (seriesIndex, pointIndex, pixelposition, data) {
-      console.log(data);
+      //console.log(data);
       xClick = data.x;
       yClick = data.y;
   });
@@ -272,29 +378,61 @@ $(document).ready(function () {
 // adjust the graph according to the end of the drag
 $('#chart1').bind('jqplotDragStop',
 function (seriesIndex, pointIndex, pixelposition, data) {
-  // convert to cumulative
   var totalHeart;
   var totalLung;
+  //console.log(JSON.stringify(pixelposition));
 
-  // if you moved up go to the top plan
-  if(pointIndex.y > yClick)
+  // convert to cumulative
+  var convertedHeart = [];
+  for(var i=0; i<heart.length; i++)
   {
-      totalHeart = convert(heart[0]);
-      totalLung = convert(lung[0]);
+    convertedHeart[i] = convert(heart[i]);
   }
-  // if you moved down go to the bottom plan
-  else
+
+  // right now only finds closest to heart
+
+  var xDist = [10000, 10000, 10000];
+  var xPt = [-1, -1, -1];
+
+  // gets closest x pt to dragged x pt for each graph
+  for(var i=0; i<convertedHeart.length; i++)
   {
-      totalHeart = convert(heart[1]);
-      totalLung = convert(lung[1]);
+    var dist;
+    for(var j=0; j<convertedHeart[i].length; j++)
+    {
+      dist = Math.abs(convertedHeart[i][j][0] - pixelposition.xaxis);
+      if(dist < xDist[i])
+      {
+        xDist[i] = dist;
+        xPt[i] = j;
+      }
+    }
   }
+
+  var minDist = [10000, 10000, 10000];
+  console.log("xPt: "+xPt);
+
+  // gets the y dist for each at that x pt
+  for(var i=0; i<convertedHeart.length; i++)
+  {
+    console.log(JSON.stringify(convertedHeart[i][31]));
+    minDist[i] = Math.abs(convertedHeart[i][xPt[i]][1] - pixelposition.yaxis);
+  }
+
+  var index = minDist.indexOf(Math.min.apply(Math, minDist));
+
+  //console.log(index);
+  //console.log(JSON.stringify(minDist));
+
+  totalHeart = convert(heart[index]);
+  totalLung = convert(lung[index]);
 
   // argument to be passed to plot the data
   var arg = [totalHeart, totalLung];
-  //var arg = totalHeart;
 
   // generate an array to pass in series options for all data sets
   var series = [];
+  var seriesName = ['Heart', 'Lung'];
   for(var i=0; i<arg.length; i++)
   {
     series.push({
@@ -305,63 +443,69 @@ function (seriesIndex, pointIndex, pixelposition, data) {
       markerOptions: {
         show: false,
         size: 2
-      }
+      },
+      label: seriesName[i]
     });
-  }
-
-  // plot the data
-  plot(arg, series);
-  plot1.replot();
-  plot2.replot();    
+  }   
 
   var heartPRP = returnPRP(totalHeart);
   var lungPRP = returnPRP(totalLung);
 
-  var ticks = ['PRP'];
-  plot2 = $.jqplot('chart2', [[heartPRP], [lungPRP]], {
+  plot2 = $.jqplot('chart2', [[['Heart', heartPRP], ['Lung', lungPRP]]], {
+      //seriesColors:['#00749F', '#00749F'],
       seriesDefaults: {
           renderer:$.jqplot.BarRenderer,
-          pointLabels: { show: true }
+          pointLabels: { show: true },
+          rendererOptions: {
+                varyBarColor: true
+            }
       },
       axes: {
           xaxis: {
-              renderer: $.jqplot.CategoryAxisRenderer,
-              ticks: ticks
+              renderer: $.jqplot.CategoryAxisRenderer
           },
           yaxis:{
-            label:'Percent (%)',
+            label:'NTCP',
             labelRenderer: $.jqplot.CanvasAxisLabelRenderer
           }
       }
   });
+
+  // plot the data
+  plot(arg, series);
+  plot1.replot();
+  plot2.replot(); 
 }); 
+
 
   //$.jqplot.postDrawSeriesHooks.push(updatedSeries);
   var nav = function () {
     $('.gw-nav > li > a').click(function () {
-        var gw_nav = $('.gw-nav');
-        gw_nav.find('li').removeClass('active');
+      var gw_nav = $('.gw-nav');
+      gw_nav.find('li').removeClass('active');
 
-        var checkElement = $(this).parent();
-        var id = checkElement.attr('id');
-        if(id == 1){
-          loadGraph(0);
-        }
-        else if (id == 2){
-          loadGraph(1);
-        } 
-        else if (id == 3){
-            //document.getElementById("result").innerHTML = "This is the third div.";
-        }
-        else {
-            //document.getElementById("result").innerHTML = "This is the fourth div.";
-        }
-        var ulDom = checkElement.find('.gw-submenu')[0];
+      var checkElement = $(this).parent();
+      var id = checkElement.attr('id');
+      if(id == 1){
+        loadGraph(0);
+        console.log("HEART");
+      }
+      else if (id == 2){
+        loadGraph(1);
+        console.log("LUNG");
+      } 
+      else if (id == 3){
+          //document.getElementById("result").innerHTML = "This is the third div.";
+      }
+      else {
+          //document.getElementById("result").innerHTML = "This is the fourth div.";
+      }
+      var ulDom = checkElement.find('.gw-submenu')[0];
 
-        if (ulDom == undefined) {
-            checkElement.addClass('active');
-            return;
-        }   
+      if (ulDom == undefined) {
+          checkElement.addClass('active');
+          return;
+      }   
     });
   };
   nav();
