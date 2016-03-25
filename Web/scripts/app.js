@@ -129,8 +129,6 @@ function readGraphs(){
 
 // choose a plan to load to display on the graph
 function loadGraph (index){
-  $.jqplot.config.enablePlugins = true;
-
   // convert to cumulative
   var totalHeart = convert(lines[0][index]);
   var totalLung = convert(lines[1][index]);
