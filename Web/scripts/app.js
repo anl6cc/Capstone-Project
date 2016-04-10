@@ -1,3 +1,20 @@
+// something to fix for later:
+// make it start on heart instead of not on anything
+
+// allowing any series to be dragged no matter the option but need to know which line is being dragged
+// I DID IT YAYYYY I'M SUCCESSFUL
+
+// working on having the area thing at the bottom yayy
+
+// got the area thing working. whichever option is chosen will have the range of stuff displayed at the bottom of the screen
+
+// let's have the thing plot the line yay
+
+// ok i did
+
+// but for some reason it's getting the middle one when you swtich instead of getting the minimum. walp
+// also gotta make it update more often
+
 // variables for the plot
 var plot1;
 var plot2;
@@ -9,6 +26,10 @@ var yClick;
 // var lung = []; Lung is 1
 var lines = [];
 var current = 0;
+
+var choice = 0;
+var organs = ['Heart', 'Lung'];
+var colors = ['#00AAFF', '#FF9933']
 
 // -------------------------------------------------------------------------------------------------------------
 // Read in patient files
@@ -130,11 +151,12 @@ function readGraphs(){
 // choose a plan to load to display on the graph
 function loadGraph (index){
   // convert to cumulative
-  var totalHeart = convert(lines[0][index]);
-  var totalLung = convert(lines[1][index]);
+  var converted = []
+  converted.push(convert(lines[0][index]));
+  converted.push(convert(lines[1][index]));
 
   // argument to be passed to plot the data
-  var arg = [totalHeart, totalLung];
+  var arg = [converted[0], converted[1]];
 
   // generate an array to pass in series options for all data sets
   var series = [];
@@ -157,8 +179,8 @@ function loadGraph (index){
   /////////////
   //BAR CHART//
   /////////////
-  var heartPRP = returnPRP(totalHeart);
-  var lungPRP = returnPRP(totalLung);
+  var heartPRP = returnPRP(converted[0]);
+  var lungPRP = returnPRP(converted[1]);
 
   plot2 = $.jqplot('chart2', [[['Heart', heartPRP], ['Lung', lungPRP]]], {
       seriesDefaults: {
@@ -181,6 +203,84 @@ function loadGraph (index){
       }
   });
 
+
+  // Range of stuff
+
+  var min = [];
+  var max = [];
+
+  for(var i=0; i<lines[0].length; i++)
+  {
+    // somehow find min and max
+  }
+
+  min[0] = 0;
+  min[1] = 0;
+
+  max[0] = 2;
+  max[1] = 1;
+
+  var minLine = convert(lines[choice][min[choice]]);
+  var maxLine = convert(lines[choice][max[choice]]);
+  var range = [maxLine, minLine, converted[choice]];
+
+  console.log('CHOICE: ' + choice);
+
+  // add another one for new line
+
+  series.push({
+      dragable: {
+          color: '#ff3366',
+          constrainTo: 'y'
+      },
+      markerOptions: {
+        show: false,
+        size: 2
+     },
+     label: 'Blah'
+    });
+
+  // generate the jqplot
+  var plot3 = $.jqplot('chart3', range, {
+    title: 'Treatment Range of '+organs[choice],
+    seriesColors: [colors[choice], colors[choice], '#000000'],
+    axesDefaults: {
+      pad: 1.05
+    },
+    fillBetween: {
+      series1: 0,
+      series2: 1,
+      color: colors[choice],
+      baseSeries: 0,
+      fill: true
+    },
+    axes: {
+        xaxis:{
+          label:'Dose (cGy)',
+          labelRenderer: $.jqplot.CanvasAxisLabelRenderer,
+          min: 0,
+          tickOptions: {
+              mark: 'inside'
+          }
+        },
+        yaxis:{
+          label:'Relative Volume',
+          labelRenderer: $.jqplot.CanvasAxisLabelRenderer,
+          pad: 1.0,
+          tickOptions: {
+              mark: 'inside'
+          }
+        }
+     },
+    seriesDefaults: {
+      rendererOptions: {
+        smooth: true
+      }
+    },
+    series: series
+  });
+
+
   // switch the Plugins on and off based on the chart being plotted
   $.jqplot.config.enablePlugins = true;
   // plot the data for the line chart
@@ -189,6 +289,7 @@ function loadGraph (index){
   plot1.replot();
   $.jqplot.config.enablePlugins = false;
   plot2.replot();
+  plot3.replot();
 }
 
 //--------------------------------------------------------------------------------------------------------
@@ -302,17 +403,17 @@ $("button").click(function(){
 //---------------------------------------------------------------------------------------------------------------
 // Highlight and Click Methods
 
-
+/*
   $('#chart2').bind('jqplotDragStart', 
   function (seriesIndex, pointIndex, pixelposition, data) {
       //console.log(data);
       xClick = data.x;
       yClick = data.y;
-  });
+  });*/
 
   $('#chart1').bind('jqplotDragStart', 
   function (seriesIndex, pointIndex, pixelposition, data) {
-      //console.log(data);
+      current = pointIndex;
       xClick = data.x;
       yClick = data.y;
   });
@@ -321,6 +422,7 @@ $("button").click(function(){
 $('#chart1').bind('jqplotDragStop',
 function (seriesIndex, pointIndex, pixelposition, data) {
   //console.log(JSON.stringify(pixelposition));
+  console.log(pixelposition);
 
   // does either heart or lung based on the curret one pressed
   // convert to cumulative
@@ -428,13 +530,13 @@ function (seriesIndex, pointIndex, pixelposition, data) {
       var checkElement = $(this).parent();
       var id = checkElement.attr('id');
       if(id == 1){
-        current = 0;
-        loadGraph(current);
+        choice = 0;
+        loadGraph(1);
         console.log("HEART");
       }
       else if (id == 2){
-        current = 1;
-        loadGraph(current);
+        choice = 1;
+        loadGraph(2);
         console.log("LUNG");
       } 
       else if (id == 3){
