@@ -29,7 +29,11 @@ var current = 0;
 
 var choice = 0;
 var organs = ['Heart', 'Lung'];
-var colors = ['#00AAFF', '#FF9933']
+var colors = ['#00AAFF', '#FF9933'];
+
+var rangeLines = [];
+var maxLine = [];
+var minLine = [];
 
 // -------------------------------------------------------------------------------------------------------------
 // Read in patient files
@@ -146,12 +150,52 @@ function readGraphs(){
 
   lines[0].push(readTextFile("./patient_data/LungDVHAD/heart/38-beamNCP_Esop.heart.ddvh")); // middle
   lines[1].push(readTextFile("./patient_data/LungDVHAD/lung/38-beamNCP_Esop.L_lung.ddvh"));
+
+  rangeLines[0] = [];
+  rangeLines[1] = [];
+
+  for(var i=0; i<lines[0].length; i++)
+  {
+    rangeLines[0].push(convert(lines[0][i]));
+    rangeLines[1].push(convert(lines[1][i]));
+  }
+
+  maxLine[0] = [];
+  maxLine[1] = [];
+  minLine[0] = [];
+  minLine[1] = [];
+
+  for(var i=0; i<lines.length; i++)
+  {
+    for(var j=0; j<lines[0].length; j++)
+    {
+      for(var k=0; k<lines[0][0].length; k++)
+      {
+        if(maxLine[i].length < lines[0][0].length)
+        {
+          maxLine[i].push(rangeLines[i][j][k]);
+        }
+        else if(rangeLines[i][j][k] > maxLine[i][k])
+        {
+          maxLine[i][k] = rangeLines[i][j][k];
+        }
+        if(minLine[i].length < lines[0][0].length)
+        {
+          minLine[i].push(rangeLines[i][j][k]);
+        }
+        else if(rangeLines[i][k] < minLine[i][j][k])
+        {
+          minLine[i][k] = rangeLines[i][j][k];
+        }
+      }
+    }
+  }
 }
 
 // choose a plan to load to display on the graph
 function loadGraph (index){
   // convert to cumulative
-  var converted = []
+  var converted = [];
   converted.push(convert(lines[0][index]));
   converted.push(convert(lines[1][index]));
 
@@ -203,31 +247,10 @@ function loadGraph (index){
       }
   });
 
-
-  // Range of stuff
-
-  var min = [];
-  var max = [];
-
-  for(var i=0; i<lines[0].length; i++)
-  {
-    // somehow find min and max
-  }
-
-  min[0] = 0;
-  min[1] = 0;
-
-  max[0] = 2;
-  max[1] = 1;
-
-  var minLine = convert(lines[choice][min[choice]]);
-  var maxLine = convert(lines[choice][max[choice]]);
-  var range = [maxLine, minLine, converted[choice]];
-
-  console.log('CHOICE: ' + choice);
+  // Range of Stuff
+  var range = [maxLine[choice], minLine[choice], converted[choice]];
 
   // add another one for new line
-
   series.push({
       dragable: {
           color: '#ff3366',
@@ -514,12 +537,71 @@ function (seriesIndex, pointIndex, pixelposition, data) {
       }
   });
 
+  // Range of Stuff
+  var range = [maxLine[choice], minLine[choice], rangeLines[choice][index]];
+
+  console.log(converted);
+
+  // add another one for new line
+  series.push({
+      dragable: {
+          color: '#ff3366',
+          constrainTo: 'y'
+      },
+      markerOptions: {
+        show: false,
+        size: 2
+     },
+     label: 'Blah'
+    });
+
+  // generate the jqplot
+  var plot3 = $.jqplot('chart3', range, {
+    title: 'Treatment Range of '+organs[choice],
+    seriesColors: [colors[choice], colors[choice], '#000000'],
+    axesDefaults: {
+      pad: 1.05
+    },
+    fillBetween: {
+      series1: 0,
+      series2: 1,
+      color: colors[choice],
+      baseSeries: 0,
+      fill: true
+    },
+    axes: {
+        xaxis:{
+          label:'Dose (cGy)',
+          labelRenderer: $.jqplot.CanvasAxisLabelRenderer,
+          min: 0,
+          tickOptions: {
+              mark: 'inside'
+          }
+        },
+        yaxis:{
+          label:'Relative Volume',
+          labelRenderer: $.jqplot.CanvasAxisLabelRenderer,
+          pad: 1.0,
+          tickOptions: {
+              mark: 'inside'
+          }
+        }
+     },
+    seriesDefaults: {
+      rendererOptions: {
+        smooth: true
+      }
+    },
+    series: series
+  });
+
   // plot the data
   $.jqplot.config.enablePlugins = true;
   plot(arg, series);
   plot1.replot();
   $.jqplot.config.enablePlugins = false;
   plot2.replot(); 
+  plot3.replot();
 }); 
 
   var nav = function () {
