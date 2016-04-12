@@ -18,18 +18,17 @@
 // variables for the plot
 var plot1;
 var plot2;
+var plot3;
 var xClick;
 var yClick;
 
 //global variables
-// var heart = []; Heart is 0
-// var lung = []; Lung is 1
 var lines = [];
 var current = 0;
 
 var choice = 0;
-var organs = ['Heart', 'Lung'];
-var colors = ['#00AAFF', '#FF9933'];
+var organs = ['Heart', 'Left Lung', 'Right Lung', 'Esophagus'];
+var colors = ['#00AAFF', '#FF9933', '#333333', '#666666'];
 
 var rangeLines = [];
 var maxLine = [];
@@ -90,7 +89,7 @@ function plot(all, seriesOptions)
 {   
     // generate the jqplot
     plot1 = $.jqplot('chart1', all,{
-    title: 'Heart vs Lung',
+    title: 'Volume vs Dose',
      axes: {
         xaxis:{
           label:'Dose (cGy)',
@@ -138,32 +137,46 @@ function plot(all, seriesOptions)
 // Plot graph
 
 function readGraphs(){
-  lines[0] = [];
-  lines[1] = [];
+
+  for(var i=0; i<organs.length; i++)
+  {
+    lines[i] = [];
+  }
 
   // read in the patient files
   lines[0].push(readTextFile("./patient_data/LungDVHAD/heart/4-beam_Esop.heart.ddvh")); // bottom
-  lines[1].push(readTextFile("./patient_data/LungDVHAD/lung/4-beam_Esop.L_lung.ddvh"));
+  lines[1].push(readTextFile("./patient_data/LungDVHAD/left_lung/4-beam_Esop.L_lung.ddvh"));
+  lines[2].push(readTextFile("./patient_data/LungDVHAD/right_lung/4-beam_Esop.R_lung.ddvh"));
+  lines[3].push(readTextFile("./patient_data/LungDVHAD/esophagus/4-beam_Esop.esophagus.ddvh"));
 
   lines[0].push(readTextFile("./patient_data/LungDVHAD/heart/9-beam_Esop.heart.ddvh")); // top
-  lines[1].push(readTextFile("./patient_data/LungDVHAD/lung/9-beam_Esop.L_lung.ddvh"));
+  lines[1].push(readTextFile("./patient_data/LungDVHAD/left_lung/9-beam_Esop.L_lung.ddvh"));
+  lines[2].push(readTextFile("./patient_data/LungDVHAD/right_lung/9-beam_Esop.R_lung.ddvh"));
+  lines[3].push(readTextFile("./patient_data/LungDVHAD/esophagus/9-beam_Esop.esophagus.ddvh"));
 
   lines[0].push(readTextFile("./patient_data/LungDVHAD/heart/38-beamNCP_Esop.heart.ddvh")); // middle
-  lines[1].push(readTextFile("./patient_data/LungDVHAD/lung/38-beamNCP_Esop.L_lung.ddvh"));
+  lines[1].push(readTextFile("./patient_data/LungDVHAD/left_lung/38-beamNCP_Esop.L_lung.ddvh"));
+  lines[2].push(readTextFile("./patient_data/LungDVHAD/right_lung/38-beamNCP_Esop.R_lung.ddvh"));
+  lines[3].push(readTextFile("./patient_data/LungDVHAD/esophagus/38-beamNCP_Esop.esophagus.ddvh"));
 
-  rangeLines[0] = [];
-  rangeLines[1] = [];
+  for(var i=0; i<organs.length; i++)
+  {
+    rangeLines[i] = [];
+  }
 
   for(var i=0; i<lines[0].length; i++)
   {
-    rangeLines[0].push(convert(lines[0][i]));
-    rangeLines[1].push(convert(lines[1][i]));
+    for(var j=0; j<rangeLines.length; j++)
+    {
+      rangeLines[j].push(convert(lines[j][i]));
+    }
   }
 
-  maxLine[0] = [];
-  maxLine[1] = [];
-  minLine[0] = [];
-  minLine[1] = [];
+  for(var i=0; i<organs.length; i++)
+  {
+    maxLine[i] = [];
+    minLine[i] = [];
+  }
 
   for(var i=0; i<lines.length; i++)
   {
@@ -264,7 +277,7 @@ function loadGraph (index){
     });
 
   // generate the jqplot
-  var plot3 = $.jqplot('chart3', range, {
+  plot3 = $.jqplot('chart3', range, {
     title: 'Treatment Range of '+organs[choice],
     seriesColors: [colors[choice], colors[choice], '#000000'],
     axesDefaults: {
@@ -445,7 +458,7 @@ $("button").click(function(){
 $('#chart1').bind('jqplotDragStop',
 function (seriesIndex, pointIndex, pixelposition, data) {
   //console.log(JSON.stringify(pixelposition));
-  console.log(pixelposition);
+  //console.log(pixelposition);
 
   // does either heart or lung based on the curret one pressed
   // convert to cumulative
@@ -474,134 +487,18 @@ function (seriesIndex, pointIndex, pixelposition, data) {
   }
 
   var minDist = [10000, 10000, 10000];
-  console.log("xPt: "+xPt);
+  //console.log("xPt: "+xPt);
 
   // gets the y dist for each at that x pt
   for(var i=0; i<converted.length; i++)
   {
-    console.log(JSON.stringify(converted[i][31]));
+    //console.log(JSON.stringify(converted[i][31]));
     minDist[i] = Math.abs(converted[i][xPt[i]][1] - pixelposition.yaxis);
   }
 
   var index = minDist.indexOf(Math.min.apply(Math, minDist));
 
-  //console.log(index);
-  //console.log(JSON.stringify(minDist));
-
-  totalHeart = convert(lines[0][index]);
-  totalLung = convert(lines[1][index]);
-
-  // argument to be passed to plot the data
-  var arg = [totalHeart, totalLung];
-
-  // generate an array to pass in series options for all data sets
-  var series = [];
-  var seriesName = ['Heart', 'Lung'];
-  for(var i=0; i<arg.length; i++)
-  {
-    series.push({
-      dragable: {
-          color: '#ff3366',
-          constrainTo: 'y'
-      },
-      markerOptions: {
-        show: false,
-        size: 2
-      },
-      label: seriesName[i]
-    });
-  }   
-
-  var heartPRP = returnPRP(totalHeart);
-  var lungPRP = returnPRP(totalLung);
-
-  plot2 = $.jqplot('chart2', [[['Heart', heartPRP], ['Lung', lungPRP]]], {
-      //seriesColors:['#00749F', '#00749F'],
-      seriesDefaults: {
-          renderer:$.jqplot.BarRenderer,
-          pointLabels: { show: true },
-          rendererOptions: {
-                varyBarColor: true
-            }
-      },
-      axes: {
-          xaxis: {
-              renderer: $.jqplot.CategoryAxisRenderer
-          },
-          yaxis:{
-            label:'NTCP',
-            labelRenderer: $.jqplot.CanvasAxisLabelRenderer,
-            min: 7,
-            max: 9
-          }
-      }
-  });
-
-  // Range of Stuff
-  var range = [maxLine[choice], minLine[choice], rangeLines[choice][index]];
-
-  console.log(converted);
-
-  // add another one for new line
-  series.push({
-      dragable: {
-          color: '#ff3366',
-          constrainTo: 'y'
-      },
-      markerOptions: {
-        show: false,
-        size: 2
-     },
-     label: 'Blah'
-    });
-
-  // generate the jqplot
-  var plot3 = $.jqplot('chart3', range, {
-    title: 'Treatment Range of '+organs[choice],
-    seriesColors: [colors[choice], colors[choice], '#000000'],
-    axesDefaults: {
-      pad: 1.05
-    },
-    fillBetween: {
-      series1: 0,
-      series2: 1,
-      color: colors[choice],
-      baseSeries: 0,
-      fill: true
-    },
-    axes: {
-        xaxis:{
-          label:'Dose (cGy)',
-          labelRenderer: $.jqplot.CanvasAxisLabelRenderer,
-          min: 0,
-          tickOptions: {
-              mark: 'inside'
-          }
-        },
-        yaxis:{
-          label:'Relative Volume',
-          labelRenderer: $.jqplot.CanvasAxisLabelRenderer,
-          pad: 1.0,
-          tickOptions: {
-              mark: 'inside'
-          }
-        }
-     },
-    seriesDefaults: {
-      rendererOptions: {
-        smooth: true
-      }
-    },
-    series: series
-  });
-
-  // plot the data
-  $.jqplot.config.enablePlugins = true;
-  plot(arg, series);
-  plot1.replot();
-  $.jqplot.config.enablePlugins = false;
-  plot2.replot(); 
-  plot3.replot();
+  loadGraph(index);
 }); 
 
   var nav = function () {
@@ -619,13 +516,17 @@ function (seriesIndex, pointIndex, pixelposition, data) {
       else if (id == 2){
         choice = 1;
         loadGraph(2);
-        console.log("LUNG");
+        console.log("LEFT LUNG");
       } 
       else if (id == 3){
-          //document.getElementById("result").innerHTML = "This is the third div.";
+        choice = 2;
+        loadGraph(2);
+        console.log("RIGHT LUNG");
       }
       else {
-          //document.getElementById("result").innerHTML = "This is the fourth div.";
+        choice = 3;
+        loadGraph(0);
+        console.log("ESOPHAGUS");
       }
       var ulDom = checkElement.find('.gw-submenu')[0];
 
