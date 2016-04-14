@@ -28,7 +28,7 @@ var current = 0;
 
 var choice = 0;
 var organs = ['Heart', 'Left Lung', 'Right Lung', 'Esophagus'];
-var colors = ['#00AAFF', '#FF9933', '#333333', '#666666'];
+var colors = ["#4bb2c5", "#EAA228", "#c5b47f", "#579575"]; // found default colors online
 
 var rangeLines = [];
 var maxLine = [];
@@ -208,17 +208,17 @@ function readGraphs(){
 // choose a plan to load to display on the graph
 function loadGraph (index){
   // convert to cumulative
+  // will be passed to plot data
   var converted = [];
-  converted.push(convert(lines[0][index]));
-  converted.push(convert(lines[1][index]));
-
-  // argument to be passed to plot the data
-  var arg = [converted[0], converted[1]];
+  for(var i=0; i<lines.length; i++)
+  {
+    converted.push(convert(lines[i][index]));
+  }
 
   // generate an array to pass in series options for all data sets
   var series = [];
-  var seriesName = ['Heart', 'Lung'];
-  for(var i=0; i<arg.length; i++)
+  var seriesName = ['Heart', 'Left Lung', 'Right Lung', 'Esophagus'];
+  for(var i=0; i<converted.length; i++)
   {
     series.push({
       dragable: {
@@ -236,10 +236,15 @@ function loadGraph (index){
   /////////////
   //BAR CHART//
   /////////////
+  var bars = [];
   var heartPRP = returnPRP(converted[0]);
   var lungPRP = returnPRP(converted[1]);
+  for(var i=0; i<converted.length; i++)
+  {
+    bars.push([seriesName[i], returnPRP(converted[i])]);
+  }
 
-  plot2 = $.jqplot('chart2', [[['Heart', heartPRP], ['Lung', lungPRP]]], {
+  plot2 = $.jqplot('chart2', [bars], {
       seriesDefaults: {
           renderer:$.jqplot.BarRenderer,
           pointLabels: { show: true },
@@ -252,10 +257,8 @@ function loadGraph (index){
               renderer: $.jqplot.CategoryAxisRenderer
           },
           yaxis:{
-            label:'NTCP',
+            label:'NTCP (%)',
             labelRenderer: $.jqplot.CanvasAxisLabelRenderer,
-            min: 7,
-            max: 9
           }
       }
   });
@@ -320,7 +323,7 @@ function loadGraph (index){
   // switch the Plugins on and off based on the chart being plotted
   $.jqplot.config.enablePlugins = true;
   // plot the data for the line chart
-  plot(arg, series);
+  plot(converted, series);
   // replot the data so graphs don't stack
   plot1.replot();
   $.jqplot.config.enablePlugins = false;
