@@ -1,20 +1,3 @@
-// something to fix for later:
-// make it start on heart instead of not on anything
-
-// allowing any series to be dragged no matter the option but need to know which line is being dragged
-// I DID IT YAYYYY I'M SUCCESSFUL
-
-// working on having the area thing at the bottom yayy
-
-// got the area thing working. whichever option is chosen will have the range of stuff displayed at the bottom of the screen
-
-// let's have the thing plot the line yay
-
-// ok i did
-
-// but for some reason it's getting the middle one when you swtich instead of getting the minimum. walp
-// also gotta make it update more often
-
 // variables for the plot
 var plot1;
 var plot2;
@@ -27,8 +10,8 @@ var lines = [];
 var current = 0;
 
 var choice = 0;
-var organs = ['Heart', 'Left Lung', 'Right Lung', 'Esophagus'];
-var colors = ["#4bb2c5", "#EAA228", "#c5b47f", "#579575"]; // found default colors online
+var organs = ['Heart', 'Left Lung', 'Right Lung', 'Esophagus', 'PTV']; // MAKE HEART RED
+var colors = ["#4bb2c5", "#EAA228", "#c5b47f", "#579575", "#839557"]; // found default colors online
 
 var rangeLines = [];
 var maxLine = [];
@@ -97,7 +80,8 @@ function plot(all, seriesOptions)
           min: 0,
           tickOptions: {
               mark: 'inside'
-          }
+          },
+          max: 8400
         },
         yaxis:{
           label:'Relative Volume',
@@ -144,26 +128,35 @@ function readGraphs(){
   }
 
   // read in the patient files
-  lines[0].push(readTextFile("./patient_data/LungDVHAD/heart/4-beam_Esop.heart.ddvh")); // bottom
+  lines[0].push(readTextFile("./patient_data/LungDVHAD/heart/4-beam_Esop.heart.ddvh"));
   lines[1].push(readTextFile("./patient_data/LungDVHAD/left_lung/4-beam_Esop.L_lung.ddvh"));
   lines[2].push(readTextFile("./patient_data/LungDVHAD/right_lung/4-beam_Esop.R_lung.ddvh"));
   lines[3].push(readTextFile("./patient_data/LungDVHAD/esophagus/4-beam_Esop.esophagus.ddvh"));
+  lines[4].push(readTextFile("./patient_data/LungDVHAD/PTV/4-beam_Esop.PTV.ddvh"));
 
-  lines[0].push(readTextFile("./patient_data/LungDVHAD/heart/9-beam_Esop.heart.ddvh")); // top
+  lines[0].push(readTextFile("./patient_data/LungDVHAD/heart/9-beam_Esop.heart.ddvh"));
   lines[1].push(readTextFile("./patient_data/LungDVHAD/left_lung/9-beam_Esop.L_lung.ddvh"));
   lines[2].push(readTextFile("./patient_data/LungDVHAD/right_lung/9-beam_Esop.R_lung.ddvh"));
   lines[3].push(readTextFile("./patient_data/LungDVHAD/esophagus/9-beam_Esop.esophagus.ddvh"));
+  lines[4].push(readTextFile("./patient_data/LungDVHAD/PTV/9-beam_Esop.PTV.ddvh"));
 
-  lines[0].push(readTextFile("./patient_data/LungDVHAD/heart/38-beamNCP_Esop.heart.ddvh")); // middle
+  lines[0].push(readTextFile("./patient_data/LungDVHAD/heart/38-beamNCP_Esop.heart.ddvh"));
   lines[1].push(readTextFile("./patient_data/LungDVHAD/left_lung/38-beamNCP_Esop.L_lung.ddvh"));
   lines[2].push(readTextFile("./patient_data/LungDVHAD/right_lung/38-beamNCP_Esop.R_lung.ddvh"));
   lines[3].push(readTextFile("./patient_data/LungDVHAD/esophagus/38-beamNCP_Esop.esophagus.ddvh"));
+  lines[4].push(readTextFile("./patient_data/LungDVHAD/PTV/38-beamNCP_Esop.PTV.ddvh"));
 
+  //console.log(lines[0][0]);
+
+  // determine the max and min lines for each organ
+
+  // initialize rangeLines
   for(var i=0; i<organs.length; i++)
   {
     rangeLines[i] = [];
   }
 
+  // each entry in rangeLines has all the converted data for that organ
   for(var i=0; i<lines[0].length; i++)
   {
     for(var j=0; j<rangeLines.length; j++)
@@ -172,37 +165,38 @@ function readGraphs(){
     }
   }
 
+  // initialize maxLine and minLine to initial low and high values
+  // previously was error with max and min changing simultaneously
   for(var i=0; i<organs.length; i++)
   {
     maxLine[i] = [];
     minLine[i] = [];
+    for(var k=0; k<lines[0][0].length; k++)
+    {
+      maxLine[i].push([rangeLines[i][0][k][0], -1]);
+      minLine[i].push([rangeLines[i][0][k][0], 2]);
+    }
   }
 
+  // loop through all data files and determine max and min values out of all data files for each organ
   for(var i=0; i<lines.length; i++)
   {
     for(var j=0; j<lines[0].length; j++)
     {
       for(var k=0; k<lines[0][0].length; k++)
       {
-        if(maxLine[i].length < lines[0][0].length)
+        if(parseFloat(rangeLines[i][j][k][1]) > parseFloat(maxLine[i][k][1]))
         {
-          maxLine[i].push(rangeLines[i][j][k]);
+          maxLine[i][k][1] = rangeLines[i][j][k][1];
         }
-        else if(rangeLines[i][j][k] > maxLine[i][k])
+        if(parseFloat(rangeLines[i][j][k][1]) < parseFloat(minLine[i][k][1]))
         {
-          maxLine[i][k] = rangeLines[i][j][k];
-        }
-        if(minLine[i].length < lines[0][0].length)
-        {
-          minLine[i].push(rangeLines[i][j][k]);
-        }
-        else if(rangeLines[i][k] < minLine[i][j][k])
-        {
-          minLine[i][k] = rangeLines[i][j][k];
+          minLine[i][k][1] = rangeLines[i][j][k][1];
         }
       }
     }
   }
+
 }
 
 // choose a plan to load to display on the graph
@@ -217,7 +211,6 @@ function loadGraph (index){
 
   // generate an array to pass in series options for all data sets
   var series = [];
-  var seriesName = ['Heart', 'Left Lung', 'Right Lung', 'Esophagus'];
   for(var i=0; i<converted.length; i++)
   {
     series.push({
@@ -229,7 +222,7 @@ function loadGraph (index){
         show: false,
         size: 2
      },
-     label: seriesName[i]
+     label: organs[i]
     });
   }
 
@@ -241,7 +234,7 @@ function loadGraph (index){
   var lungPRP = returnPRP(converted[1]);
   for(var i=0; i<converted.length; i++)
   {
-    bars.push([seriesName[i], returnPRP(converted[i])]);
+    bars.push([organs[i], returnPRP(converted[i])]);
   }
 
   plot2 = $.jqplot('chart2', [bars], {
@@ -300,7 +293,8 @@ function loadGraph (index){
           min: 0,
           tickOptions: {
               mark: 'inside'
-          }
+          },
+          max: 8400
         },
         yaxis:{
           label:'Relative Volume',
@@ -526,10 +520,15 @@ function (seriesIndex, pointIndex, pixelposition, data) {
         loadGraph(2);
         console.log("RIGHT LUNG");
       }
-      else {
+      else if (id == 4){
         choice = 3;
         loadGraph(0);
         console.log("ESOPHAGUS");
+      }
+      else {
+        choice = 4;
+        loadGraph(0);
+        console.log("PTV");
       }
       var ulDom = checkElement.find('.gw-submenu')[0];
 
