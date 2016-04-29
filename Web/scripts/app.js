@@ -8,10 +8,11 @@ var yClick;
 //global variables
 var lines = [];
 var current = 0;
+var patient = 0;
 
 var choice = 0;
 var organs = ['Heart', 'Left Lung', 'Right Lung', 'Esophagus', 'PTV']; // MAKE HEART RED
-var colors = ["#4bb2c5", "#EAA228", "#c5b47f", "#579575", "#839557"]; // found default colors online
+var colors = ["#ff0000", "#ff6600", "#3399ff", "#009933", "#9900cc"]; // found default colors online
 
 var rangeLines = [];
 var maxLine = [];
@@ -73,6 +74,7 @@ function plot(all, seriesOptions)
     // generate the jqplot
     plot1 = $.jqplot('chart1', all,{
     title: 'Volume vs Dose',
+    seriesColors: colors,
      axes: {
         xaxis:{
           label:'Dose (cGy)',
@@ -127,24 +129,7 @@ function readGraphs(){
     lines[i] = [];
   }
 
-  // read in the patient files
-  lines[0].push(readTextFile("./patient_data/LungDVHAD/heart/4-beam_Esop.heart.ddvh"));
-  lines[1].push(readTextFile("./patient_data/LungDVHAD/left_lung/4-beam_Esop.L_lung.ddvh"));
-  lines[2].push(readTextFile("./patient_data/LungDVHAD/right_lung/4-beam_Esop.R_lung.ddvh"));
-  lines[3].push(readTextFile("./patient_data/LungDVHAD/esophagus/4-beam_Esop.esophagus.ddvh"));
-  lines[4].push(readTextFile("./patient_data/LungDVHAD/PTV/4-beam_Esop.PTV.ddvh"));
-
-  lines[0].push(readTextFile("./patient_data/LungDVHAD/heart/9-beam_Esop.heart.ddvh"));
-  lines[1].push(readTextFile("./patient_data/LungDVHAD/left_lung/9-beam_Esop.L_lung.ddvh"));
-  lines[2].push(readTextFile("./patient_data/LungDVHAD/right_lung/9-beam_Esop.R_lung.ddvh"));
-  lines[3].push(readTextFile("./patient_data/LungDVHAD/esophagus/9-beam_Esop.esophagus.ddvh"));
-  lines[4].push(readTextFile("./patient_data/LungDVHAD/PTV/9-beam_Esop.PTV.ddvh"));
-
-  lines[0].push(readTextFile("./patient_data/LungDVHAD/heart/38-beamNCP_Esop.heart.ddvh"));
-  lines[1].push(readTextFile("./patient_data/LungDVHAD/left_lung/38-beamNCP_Esop.L_lung.ddvh"));
-  lines[2].push(readTextFile("./patient_data/LungDVHAD/right_lung/38-beamNCP_Esop.R_lung.ddvh"));
-  lines[3].push(readTextFile("./patient_data/LungDVHAD/esophagus/38-beamNCP_Esop.esophagus.ddvh"));
-  lines[4].push(readTextFile("./patient_data/LungDVHAD/PTV/38-beamNCP_Esop.PTV.ddvh"));
+  lines = readFiles(patient, organs.length);
 
   //console.log(lines[0][0]);
 
@@ -178,7 +163,13 @@ function readGraphs(){
     }
   }
 
+  //console.log(lines.length);
+  //console.log(lines[0].length);
+  //console.log(lines[0][0].length);
+
   // loop through all data files and determine max and min values out of all data files for each organ
+  // ERROR when x points are not the same
+  // fixed by just replacing x points
   for(var i=0; i<lines.length; i++)
   {
     for(var j=0; j<lines[0].length; j++)
@@ -187,15 +178,42 @@ function readGraphs(){
       {
         if(parseFloat(rangeLines[i][j][k][1]) > parseFloat(maxLine[i][k][1]))
         {
+          maxLine[i][k][0] = rangeLines[i][j][k][0];
+          //maxLine[i][k][0] = (rangeLines[i][j][k][0]+maxLine[i][k][0])/2;
           maxLine[i][k][1] = rangeLines[i][j][k][1];
         }
         if(parseFloat(rangeLines[i][j][k][1]) < parseFloat(minLine[i][k][1]))
         {
+          //if(minLine[i][k][0] > rangeLines[i][j][k][0])
+          minLine[i][k][0] = rangeLines[i][j][k][0];
           minLine[i][k][1] = rangeLines[i][j][k][1];
         }
       }
     }
   }
+
+  //console.log('hi');
+  /*
+
+  // to ensure max is greater than min swap the two 
+  for(var i=0; i<maxLine.length; i++)
+  {
+    for(var k=0; k<maxLine[0].length; k++)
+    {
+      if(parseFloat(minLine[i][k][1]) > parseFloat(maxLine[i][k][1]))
+      {
+        var temp = maxLine[i][k];
+        maxLine[i][k] = minLine[i][k];
+        minLine[i][k] = temp;
+      }
+    //  console.log('rye');
+    }
+    //console.log('bye');
+  }*/
+
+  //console.log(JSON.stringify(minLine[3]));
+
+  //console.log(JSON.stringify(lines[1]))
 
 }
 
@@ -238,6 +256,7 @@ function loadGraph (index){
   }
 
   plot2 = $.jqplot('chart2', [bars], {
+      seriesColors: colors,
       seriesDefaults: {
           renderer:$.jqplot.BarRenderer,
           pointLabels: { show: true },
@@ -258,6 +277,9 @@ function loadGraph (index){
 
   // Range of Stuff
   var range = [maxLine[choice], minLine[choice], converted[choice]];
+
+  //console.log(JSON.stringify(maxLine[choice]));
+  //console.log(JSON.stringify(minLine[choice]));
 
   // add another one for new line
   series.push({
@@ -386,7 +408,7 @@ $(document).ready(function () {
 
   readGraphs();
 
-  loadGraph(2);
+  loadGraph(0);
 
 // -------------------------------------------------------------------------------------------------------------
 // Python fun
@@ -486,10 +508,13 @@ function (seriesIndex, pointIndex, pixelposition, data) {
   var minDist = [10000, 10000, 10000];
   //console.log("xPt: "+xPt);
 
+  //console.log(converted[0]);
+
   // gets the y dist for each at that x pt
-  for(var i=0; i<converted.length; i++)
+  for(var i=0; i<xPt.length; i++) //converted.length
   {
     //console.log(JSON.stringify(converted[i][31]));
+    //console.log(xPt[i]);
     minDist[i] = Math.abs(converted[i][xPt[i]][1] - pixelposition.yaxis);
   }
 
@@ -507,17 +532,17 @@ function (seriesIndex, pointIndex, pixelposition, data) {
       var id = checkElement.attr('id');
       if(id == 1){
         choice = 0;
-        loadGraph(1);
+        loadGraph(0);
         console.log("HEART");
       }
       else if (id == 2){
         choice = 1;
-        loadGraph(2);
+        loadGraph(0);
         console.log("LEFT LUNG");
       } 
       else if (id == 3){
         choice = 2;
-        loadGraph(2);
+        loadGraph(0);
         console.log("RIGHT LUNG");
       }
       else if (id == 4){
@@ -525,10 +550,26 @@ function (seriesIndex, pointIndex, pixelposition, data) {
         loadGraph(0);
         console.log("ESOPHAGUS");
       }
-      else {
+      else if (id == 5){
         choice = 4;
         loadGraph(0);
         console.log("PTV");
+      }
+      else {
+        choice = 0;
+        if(patient)
+        {
+          patient = 0;
+          $("#patientname").html("Patient A");
+        }
+        else
+        {
+          patient = 1;
+          $("#patientname").html("Patient B");
+        }
+        readGraphs();
+        loadGraph(0);
+        console.log("Patient switched");
       }
       var ulDom = checkElement.find('.gw-submenu')[0];
 
