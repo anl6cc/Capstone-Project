@@ -5,14 +5,13 @@
 <head>
 	<title>Radiation Oncology Decision Support System</title>
 
+  <!-- import many files from jquery and jqplot -->
   <script type="text/javascript" src="./scripts/jqplot/dist/jquery.min.js"></script>
   <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
   <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
 
-  <!--<link rel="stylesheet" type="text/css" hrf="./scripts/jqplot/dist/jquery.jqplot.css"/>-->
   <script type="text/javascript" src="./scripts/jqplot/dist/jquery.jqplot.min.js"></script>
   <link class="include" rel="stylesheet" type="text/css" href="./css/jquery.jqplot.css" />
-  <!--<link rel="stylesheet" type="text/css" hrf="./css/jquery.jqplot.css"/>-->
 
   <link rel="stylesheet" type="text/css" href="css/bs_leftnavi.css">
   <script src="./scripts/bs_leftnavi.js"></script>
@@ -36,6 +35,7 @@
 </head>
 <body>
 
+  <!-- create the navigation bar -->
   <div id="gw-sidebar" class="gw-sidebar">
     <center>
       <div id="patientname">Patient A</div>
@@ -54,21 +54,12 @@
   </div>
 </div>
 <div id = "thebody">
+  <!-- display the plots -->
   <!--<button> Run Python </button>-->
   <div class="example-plot" id="chart1"></div><br>
   <div class="example-chart" id = "chart2"></div><br>
   <div class="example-plot" id = "chart3"></div>
-</div> 
-  <style type="text/css">
-    /*.jqplot-series-canvas {
-        z-index: 1;
-    }
-    .jqplot-event-canvas {
-        background-image: url(https://img1.etsystatic.com/032/0/8916355/il_fullxfull.604110135_skj4.jpg);
-    }*/
-  </style>
+</div>
 </body>
-
-
 
 </html>

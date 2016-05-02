@@ -1,22 +1,22 @@
 // variables for the plot
-var plot1;
-var plot2;
-var plot3;
-var xClick;
-var yClick;
+var plot1; // interactive plot
+var plot2; // ntcp plot
+var plot3; // treatment range plot
+var xClick; // x coordinates of a click
+var yClick; // y coordinates of a click
 
 //global variables
-var lines = [];
-var current = 0;
-var patient = 0;
+var lines = []; // all the original data for all plans for the specific patient
+var current = 0; // determine which organ is being adjusted
+var patient = 0; // determines which patient data to read in
 
-var choice = 0;
-var organs = ['Heart', 'Left Lung', 'Right Lung', 'Esophagus', 'PTV']; // MAKE HEART RED
-var colors = ["#ff0000", "#ff6600", "#3399ff", "#009933", "#9900cc"]; // found default colors online
+var choice = 0; // choice of organ from the navigation bar
+var organs = ['Heart', 'Left Lung', 'Right Lung', 'Esophagus', 'PTV'];
+var colors = ["#ff0000", "#ff6600", "#3399ff", "#009933", "#9900cc"]; // colors for all the organs
 
-var rangeLines = [];
-var maxLine = [];
-var minLine = [];
+var rangeLines = []; // all plans for all organs
+var maxLine = []; // the max at each dose of each organ
+var minLine = []; // the min at each dose of each organ
 
 // -------------------------------------------------------------------------------------------------------------
 // Read in patient files
@@ -71,7 +71,7 @@ function initialize(dataString)
 // only plots for Chart 1
 function plot(all, seriesOptions)
 {   
-    // generate the jqplot
+    // generate the interactive
     plot1 = $.jqplot('chart1', all,{
     title: 'Volume vs Dose',
     seriesColors: colors,
@@ -131,8 +131,6 @@ function readGraphs(){
 
   lines = readFiles(patient, organs.length);
 
-  //console.log(lines[0][0]);
-
   // determine the max and min lines for each organ
 
   // initialize rangeLines
@@ -163,13 +161,7 @@ function readGraphs(){
     }
   }
 
-  //console.log(lines.length);
-  //console.log(lines[0].length);
-  //console.log(lines[0][0].length);
-
   // loop through all data files and determine max and min values out of all data files for each organ
-  // ERROR when x points are not the same
-  // fixed by just replacing x points
   for(var i=0; i<lines.length; i++)
   {
     for(var j=0; j<lines[0].length; j++)
@@ -179,41 +171,16 @@ function readGraphs(){
         if(parseFloat(rangeLines[i][j][k][1]) > parseFloat(maxLine[i][k][1]))
         {
           maxLine[i][k][0] = rangeLines[i][j][k][0];
-          //maxLine[i][k][0] = (rangeLines[i][j][k][0]+maxLine[i][k][0])/2;
           maxLine[i][k][1] = rangeLines[i][j][k][1];
         }
         if(parseFloat(rangeLines[i][j][k][1]) < parseFloat(minLine[i][k][1]))
         {
-          //if(minLine[i][k][0] > rangeLines[i][j][k][0])
           minLine[i][k][0] = rangeLines[i][j][k][0];
           minLine[i][k][1] = rangeLines[i][j][k][1];
         }
       }
     }
   }
-
-  //console.log('hi');
-  /*
-
-  // to ensure max is greater than min swap the two 
-  for(var i=0; i<maxLine.length; i++)
-  {
-    for(var k=0; k<maxLine[0].length; k++)
-    {
-      if(parseFloat(minLine[i][k][1]) > parseFloat(maxLine[i][k][1]))
-      {
-        var temp = maxLine[i][k];
-        maxLine[i][k] = minLine[i][k];
-        minLine[i][k] = temp;
-      }
-    //  console.log('rye');
-    }
-    //console.log('bye');
-  }*/
-
-  //console.log(JSON.stringify(minLine[3]));
-
-  //console.log(JSON.stringify(lines[1]))
 
 }
 
@@ -248,9 +215,9 @@ function loadGraph (index){
   //BAR CHART//
   /////////////
   var bars = [];
-  var heartPRP = returnPRP(converted[0]);
-  var lungPRP = returnPRP(converted[1]);
-  for(var i=0; i<converted.length; i++)
+
+  // does not include the PTV NTCP
+  for(var i=0; i<converted.length - 1; i++)
   {
     bars.push([organs[i], returnPRP(converted[i])]);
   }
@@ -275,13 +242,12 @@ function loadGraph (index){
       }
   });
 
-  // Range of Stuff
+  /////////////////////////
+  //TREATMENT RANGE CHART//
+  /////////////////////////
   var range = [maxLine[choice], minLine[choice], converted[choice]];
 
-  //console.log(JSON.stringify(maxLine[choice]));
-  //console.log(JSON.stringify(minLine[choice]));
-
-  // add another one for new line
+  // add another one to the series for the new line
   series.push({
       dragable: {
           color: '#ff3366',
@@ -291,10 +257,12 @@ function loadGraph (index){
         show: false,
         size: 2
      },
-     label: 'Blah'
+     label: 'Not seen'
     });
 
   // generate the jqplot
+  // fills the area in between the max and min
+  // also draws the currently selected line on top
   plot3 = $.jqplot('chart3', range, {
     title: 'Treatment Range of '+organs[choice],
     seriesColors: [colors[choice], colors[choice], '#000000'],
@@ -351,7 +319,7 @@ function loadGraph (index){
 // Utility Methods
 
 // convert the data from dvh volume to cdvh volume
-// uses method from Watkin's python program
+// uses method from Dr. Watkin's python program
 function convert(data)
 {
   var dose = [];
@@ -411,7 +379,8 @@ $(document).ready(function () {
   loadGraph(0);
 
 // -------------------------------------------------------------------------------------------------------------
-// Python fun
+// Unused code to communicate with Python files
+// Does not work
 
 /*
   $("button").click(function(){
@@ -458,71 +427,62 @@ $("button").click(function(){
 //---------------------------------------------------------------------------------------------------------------
 // Highlight and Click Methods
 
-/*
-  $('#chart2').bind('jqplotDragStart', 
-  function (seriesIndex, pointIndex, pixelposition, data) {
-      //console.log(data);
-      xClick = data.x;
-      yClick = data.y;
-  });*/
-
+  // beginning of the drag
   $('#chart1').bind('jqplotDragStart', 
   function (seriesIndex, pointIndex, pixelposition, data) {
-      current = pointIndex;
+      current = pointIndex; // determine which organ is being adjusted
       xClick = data.x;
       yClick = data.y;
   });
 
-// adjust the graph according to the end of the drag
-$('#chart1').bind('jqplotDragStop',
-function (seriesIndex, pointIndex, pixelposition, data) {
-  //console.log(JSON.stringify(pixelposition));
-  //console.log(pixelposition);
-
-  // does either heart or lung based on the curret one pressed
-  // convert to cumulative
-  var converted = [];
-  for(var i=0; i<lines[current].length; i++)
-  {
-    converted[i] = convert(lines[current][i]);
-  }
-
-  var xDist = [10000, 10000, 10000];
-  var xPt = [-1, -1, -1];
-
-  // gets closest x pt to dragged x pt for each graph
-  for(var i=0; i<converted.length; i++)
-  {
-    var dist;
-    for(var j=0; j<converted[i].length; j++)
+  // adjust the graph according to the end of the drag
+  $('#chart1').bind('jqplotDragStop',
+  function (seriesIndex, pointIndex, pixelposition, data) {
+    // convert to cumulative
+    var converted = [];
+    for(var i=0; i<lines[current].length; i++)
     {
-      dist = Math.abs(converted[i][j][0] - pixelposition.xaxis);
-      if(dist < xDist[i])
+      converted[i] = convert(lines[current][i]);
+    }
+
+    var xDist = []; // the x distance between each plan for the organ and the clicked point
+    for(var i=0; i<lines[current].length; i++)
+      xDist.push(10000); //initialize the array
+    var xPt = []; // which index the closest x point is
+    for(var i=0; i<lines[current].length; i++)
+      xPt.push(-1); //initialize the array
+
+    // gets closest x pt to dragged x pt for each graph
+    for(var i=0; i<converted.length; i++)
+    {
+      var dist;
+      for(var j=0; j<converted[i].length; j++)
       {
-        xDist[i] = dist;
-        xPt[i] = j;
+        dist = Math.abs(converted[i][j][0] - pixelposition.xaxis);
+        if(dist < xDist[i])
+        {
+          xDist[i] = dist;
+          xPt[i] = j;
+        }
       }
     }
-  }
 
-  var minDist = [10000, 10000, 10000];
-  //console.log("xPt: "+xPt);
+    var minDist = []; // the minimum y distance from each plan
+    for(var i=0; i<lines[current].length; i++)
+      minDist.push(10000); //initialize the array
 
-  //console.log(converted[0]);
+    // gets the y dist for each at that x pt
+    for(var i=0; i<xPt.length; i++)
+    {
+      minDist[i] = Math.abs(converted[i][xPt[i]][1] - pixelposition.yaxis);
+    }
 
-  // gets the y dist for each at that x pt
-  for(var i=0; i<xPt.length; i++) //converted.length
-  {
-    //console.log(JSON.stringify(converted[i][31]));
-    //console.log(xPt[i]);
-    minDist[i] = Math.abs(converted[i][xPt[i]][1] - pixelposition.yaxis);
-  }
+    var index = minDist.indexOf(Math.min.apply(Math, minDist)); // chooses the plan with the minimum y distance
 
-  var index = minDist.indexOf(Math.min.apply(Math, minDist));
+    loadGraph(index);
+  }); 
 
-  loadGraph(index);
-}); 
-
+  // code for the nagivation bar on the left hand side
   var nav = function () {
     $('.gw-nav > li > a').click(function () {
       var gw_nav = $('.gw-nav');
@@ -530,32 +490,32 @@ function (seriesIndex, pointIndex, pixelposition, data) {
 
       var checkElement = $(this).parent();
       var id = checkElement.attr('id');
-      if(id == 1){
+      if(id == 1){ // Heart option was chosen
         choice = 0;
         loadGraph(0);
         console.log("HEART");
       }
-      else if (id == 2){
+      else if (id == 2){ // Left Lung option was chosen
         choice = 1;
         loadGraph(0);
         console.log("LEFT LUNG");
       } 
-      else if (id == 3){
+      else if (id == 3){ // Right Lung option was chosen
         choice = 2;
         loadGraph(0);
         console.log("RIGHT LUNG");
       }
-      else if (id == 4){
+      else if (id == 4){ // Esophagus option was chosen
         choice = 3;
         loadGraph(0);
         console.log("ESOPHAGUS");
       }
-      else if (id == 5){
+      else if (id == 5){ // PTV option was chosen
         choice = 4;
         loadGraph(0);
         console.log("PTV");
       }
-      else {
+      else { // Change Patient option was chosen
         choice = 0;
         if(patient)
         {
@@ -581,4 +541,4 @@ function (seriesIndex, pointIndex, pixelposition, data) {
   };
   nav();
 
-});
+}); // the click methods and navigation bar are wrapped in the document.ready function
